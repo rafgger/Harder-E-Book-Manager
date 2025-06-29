@@ -61,15 +61,40 @@ async function fetchBookDetail(isbn) {
     showDetail();
 }
 
+function forceRepaint(element) {
+    if (element) {
+        element.style.display = "none";
+        element.offsetHeight; // Trigger reflow
+        element.style.display = "";
+    }
+}
+
 function showLogin() {
-    if (loginContainer) loginContainer.classList.remove("hidden");
-    if (appContainer) appContainer.classList.add("hidden");
+    console.log("showLogin called"); // Debugging log
+    if (loginContainer) {
+        loginContainer.style.display = "flex"; // Directly set display property
+        console.log("loginContainer style.display:", loginContainer.style.display);
+    }
+    if (appContainer) {
+        appContainer.style.display = "none"; // Directly set display property
+        console.log("appContainer style.display:", appContainer.style.display);
+    }
 }
 
 function showApp() {
-    if (loginContainer) loginContainer.classList.add("hidden");
-    if (appContainer) appContainer.classList.remove("hidden");
-    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    console.log("showApp called"); // Debugging log
+    if (loginContainer) {
+        loginContainer.style.display = "none"; // Directly set display property
+        console.log("loginContainer style.display:", loginContainer.style.display);
+    }
+    if (appContainer) {
+        appContainer.style.display = "block"; // Directly set display property
+        console.log("appContainer style.display:", appContainer.style.display);
+    }
+    if (logoutBtn) {
+        logoutBtn.style.display = "inline-block"; // Directly set display property
+        console.log("logoutBtn style.display:", logoutBtn.style.display);
+    }
 }
 
 function logout() {
