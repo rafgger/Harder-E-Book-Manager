@@ -1,0 +1,22 @@
+/* Print styles for E-Book Overview */
+body { background: #fff !important; color: #000 !important; }
+#app { box-shadow: none !important; background: #fff !important; }
+#back-btn, #book-detail { display: none !important; }
+.grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+}
+.book-card {
+  box-shadow: none !important;
+  border: 1px solid #ccc !important;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+  margin-bottom: 1rem;
+}
+.book-cover { height: 180px !important; }
+
+@media print {
+  html, body { width: 100%; }
+  .grid { width: 100%; }
+  .book-card { width: 100%; }
+}
