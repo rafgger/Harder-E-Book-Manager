@@ -1,0 +1,15 @@
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbfc; color: #222; margin: 0; }
+#app { max-width: 900px; margin: 2rem auto; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+h1 { text-align: center; font-weight: 400; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.book-card { background: #f5f6fa; border-radius: 6px; box-shadow: 0 1px 4px #0001; padding: 1rem; cursor: pointer; transition: box-shadow .2s; }
+.book-card:hover { box-shadow: 0 4px 16px #0002; }
+.book-cover { width: 100%; height: 280px; object-fit: cover; border-radius: 4px; background: #eee; }
+.book-title { font-size: 1.1rem; margin: .7rem 0 .3rem; font-weight: 500; }
+.book-author, .book-year { color: #666; font-size: .95rem; }
+#book-detail { margin-top: 2rem; }
+#book-detail img { width: 200px; height: 280px; object-fit: cover; border-radius: 4px; }
+#book-detail h2 { margin: 1rem 0 .5rem; }
+#book-detail .meta { color: #555; margin-bottom: .5rem; }
+#back-btn { margin: 2rem auto 0; display: block; padding: .5rem 1.5rem; font-size: 1rem; border: none; border-radius: 4px; background: #222; color: #fff; cursor: pointer; }
+.hidden { display: none; }
