@@ -21,10 +21,27 @@
             <h1>E-Book Collection</h1>
             <button id="logout-btn" class="hidden">Logout</button>
             <button id="import-btn">Import Books</button>
+            <button id="add-btn">+</button>
         </div>
         <div id="book-list" class="grid"></div>
         <div id="book-detail" class="hidden"></div>
         <button id="back-btn" class="hidden">Back to list</button>
+    </div>
+    <div id="add-form-container" class="hidden centered">
+        <form id="add-form">
+            <h2>Add New Book</h2>
+            <input type="text" id="add-isbn" placeholder="ISBN" required>
+            <input type="text" id="add-title" placeholder="Title" required>
+            <input type="text" id="add-author" placeholder="Author" required>
+            <input type="number" id="add-year" placeholder="Year" required>
+            <input type="text" id="add-publisher" placeholder="Publisher" required>
+            <input type="url" id="add-cover" placeholder="Cover URL" required>
+            <div style="display:flex;gap:1rem;justify-content:center;margin-top:1rem;">
+                <button type="button" id="cancel-add">Cancel</button>
+                <button type="submit">Submit</button>
+            </div>
+            <div id="add-error" class="error"></div>
+        </form>
     </div>
     <script src="app.js"></script>
 </body>

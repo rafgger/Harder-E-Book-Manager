@@ -1,7 +1,7 @@
 # FastAPI backend for E-Book Manager
 # Requirements: fastapi, uvicorn, asyncpg, sqlalchemy
 
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -13,11 +13,25 @@ import config
 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import secrets
+import pickle
 
 security = HTTPBasic()
 
 # Simple in-memory session store
-sessions = set()
+SESSIONS_FILE = "sessions.pkl"
+
+def load_sessions():
+    try:
+        with open(SESSIONS_FILE, "rb") as f:
+            return set(pickle.load(f))
+    except Exception:
+        return set()
+
+def save_sessions(sessions):
+    with open(SESSIONS_FILE, "wb") as f:
+        pickle.dump(list(sessions), f)
+
+sessions = load_sessions()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
@@ -85,11 +99,20 @@ async def get_book(isbn: str):
         }
 
 # Authentication dependency
-async def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+async def authenticate(
+    credentials: HTTPBasicCredentials = Depends(security),
+    authorization: str = Header(None)
+):
+    # Check for Bearer token first
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+        if token in sessions:
+            return True
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    # Fallback to HTTP Basic Auth
     correct_password = config.PASSWORD
     if not secrets.compare_digest(credentials.password, correct_password):
         raise HTTPException(status_code=401, detail="Incorrect password")
-    # Add session token logic if needed
     return True
 
 @app.post("/login")
@@ -100,6 +123,7 @@ async def login(credentials: HTTPBasicCredentials = Depends(security)):
     # Generate a simple session token
     token = secrets.token_hex(16)
     sessions.add(token)
+    save_sessions(sessions)
     return {"token": token}
 
 @app.post("/books")
@@ -109,7 +133,30 @@ async def add_book(book: dict, auth: bool = Depends(authenticate)):
     for field in required:
         if field not in book or not book[field]:
             raise HTTPException(status_code=400, detail=f"Missing field: {field}")
-    async with SessionLocal() as session:
+    async with AsyncSession(engine) as session:
+        new_book = Book()
+        new_book.isbn = book["ISBN"]
+        new_book.title = book["title"]
+        new_book.author = book["author"]
+        new_book.year = book["year"]
+        new_book.publisher = book["publisher"]
+        new_book.cover = book["cover"]
+        session.add(new_book)
+        try:
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=400, detail=str(e))
+    return {"message": "Book added"}
+
+@app.post("/add-book")
+async def add_book_endpoint(book: dict, auth: bool = Depends(authenticate)):
+    # Validation
+    required = ["ISBN", "title", "author", "year", "publisher", "cover"]
+    for field in required:
+        if field not in book or not book[field]:
+            raise HTTPException(status_code=400, detail=f"Missing field: {field}")
+    async with AsyncSession(engine) as session:
         new_book = Book()
         new_book.isbn = book["ISBN"]
         new_book.title = book["title"]
@@ -134,10 +181,15 @@ async def import_books(auth: bool = Depends(authenticate)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read books.json: {e}")
     imported = 0
-    async with SessionLocal() as session:
+    async with AsyncSession(engine) as session:
         for book in books:
             if not all(k in book for k in ["ISBN", "title", "author", "year", "publisher", "cover"]):
                 continue
+            # Check if the book already exists
+            result = await session.execute(select(Book).where(Book.isbn == book["ISBN"]))
+            existing = result.scalar_one_or_none()
+            if existing:
+                continue  # Skip duplicates
             new_book = Book()
             new_book.isbn = book["ISBN"]
             new_book.title = book["title"]
