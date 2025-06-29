@@ -3,6 +3,12 @@ const API_URL = "http://localhost:8000/books";
 const bookList = document.getElementById("book-list");
 const bookDetail = document.getElementById("book-detail");
 const backBtn = document.getElementById("back-btn");
+const logoutBtn = document.getElementById("logout-btn");
+const loginContainer = document.getElementById("login-container");
+const loginForm = document.getElementById("login-form");
+const loginError = document.getElementById("login-error");
+const appContainer = document.getElementById("app");
+let sessionToken = null;
 
 function showOverview() {
     if (bookList) bookList.classList.remove("hidden");
@@ -41,16 +47,53 @@ function renderBookDetail(book) {
 }
 
 async function fetchBooks() {
-    const res = await fetch(API_URL);
+    const headers = sessionToken ? { "Authorization": "Bearer " + sessionToken } : {};
+    const res = await fetch(API_URL, { headers });
     const books = await res.json();
     renderBooks(books);
 }
 
 async function fetchBookDetail(isbn) {
-    const res = await fetch(`${API_URL}/${isbn}`);
+    const headers = sessionToken ? { "Authorization": "Bearer " + sessionToken } : {};
+    const res = await fetch(`${API_URL}/${isbn}`, { headers });
     const book = await res.json();
     renderBookDetail(book);
     showDetail();
+}
+
+function showLogin() {
+    if (loginContainer) loginContainer.classList.remove("hidden");
+    if (appContainer) appContainer.classList.add("hidden");
+}
+
+function showApp() {
+    if (loginContainer) loginContainer.classList.add("hidden");
+    if (appContainer) appContainer.classList.remove("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+}
+
+function logout() {
+    sessionToken = null;
+    showLogin();
+    if (loginForm) loginForm.reset();
+    if (loginError) loginError.textContent = "";
+}
+
+async function login(password) {
+    try {
+        const res = await fetch("http://localhost:8000/login", {
+            method: "POST",
+            headers: { "Authorization": "Basic " + btoa(":" + password) },
+        });
+        if (!res.ok) throw new Error("Invalid password");
+        const data = await res.json();
+        sessionToken = data.token;
+        showApp();
+        fetchBooks();
+        showOverview();
+    } catch (e) {
+        if (loginError) loginError.textContent = "Login failed: " + e.message;
+    }
 }
 
 if (bookList) {
@@ -68,10 +111,21 @@ if (backBtn) {
     });
 }
 
+if (loginForm) {
+    loginForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const pw = document.getElementById("password").value;
+        login(pw);
+    });
+}
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+}
+
 // Initial load (only if elements exist)
 if (bookList && bookDetail && backBtn) {
-    fetchBooks();
-    showOverview();
+    showLogin();
 }
 
 // For testing purposes
