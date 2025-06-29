@@ -1,5 +1,37 @@
 const API_URL = "http://localhost:8000/books";
 
+// Snackbar functionality
+function showSnackbar(message, type = 'success') {
+    // Remove any existing snackbar
+    const existingSnackbar = document.querySelector('.snackbar');
+    if (existingSnackbar) {
+        existingSnackbar.remove();
+    }
+    
+    // Create new snackbar
+    const snackbar = document.createElement('div');
+    snackbar.className = `snackbar ${type}`;
+    snackbar.textContent = message;
+    
+    // Add to document
+    document.body.appendChild(snackbar);
+    
+    // Show with animation
+    setTimeout(() => {
+        snackbar.classList.add('show');
+    }, 100);
+    
+    // Hide after 4 seconds
+    setTimeout(() => {
+        snackbar.classList.remove('show');
+        setTimeout(() => {
+            if (snackbar.parentNode) {
+                snackbar.parentNode.removeChild(snackbar);
+            }
+        }, 300);
+    }, 4000);
+}
+
 const bookList = document.getElementById("book-list");
 const bookDetail = document.getElementById("book-detail");
 const backBtn = document.getElementById("back-btn");
@@ -149,12 +181,14 @@ async function login(password) {
         console.log("Login response data:", data); // Debugging log
         localStorage.setItem("sessionToken", data.token); // Save token to localStorage
         console.log("Session token set and saved:", data.token); // Debugging log
+        showSnackbar("Login successful!");
         showApp();
         fetchBooks();
         showOverview();
     } catch (e) {
         console.error("Error during login:", e); // Debugging log
         if (loginError) loginError.textContent = "Login failed: " + e.message;
+        showSnackbar("Login failed: " + e.message, "error");
     }
 }
 
@@ -202,11 +236,11 @@ if (importBtn) {
             }
             const data = await res.json();
             console.log("Response data:", data); // Debugging log
-            alert(`${data.imported} books imported successfully!`);
+            showSnackbar(`${data.imported} books imported successfully!`);
             fetchBooks(); // Refresh the book list
         } catch (e) {
             console.error("Error during import:", e); // Debugging log
-            alert(`Error: ${e.message}`);
+            showSnackbar(`Error: ${e.message}`, 'error');
         }
     });
 }
@@ -247,6 +281,7 @@ if (addForm) {
         if (!token) {
             console.error("[DEBUG] No session token found. Redirecting to login."); // Debug log
             if (addError) addError.textContent = "You are not logged in. Please log in again.";
+            showSnackbar("You are not logged in. Please log in again.", "error");
             showLogin();
             return;
         }
@@ -266,6 +301,7 @@ if (addForm) {
                 console.error("[DEBUG] Session expired. Redirecting to login."); // Debug log
                 localStorage.removeItem("sessionToken");
                 if (addError) addError.textContent = "Session expired. Please log in again.";
+                showSnackbar("Session expired. Please log in again.", "error");
                 showLogin();
                 return;
             }
@@ -273,15 +309,30 @@ if (addForm) {
                 const errorText = await res.text();
                 console.error("[DEBUG] Error response from /add-book:", errorText); // Debug log
                 if (addError) addError.textContent = errorText;
+                
+                // Parse error message for user-friendly display
+                let errorMessage = "Failed to add book";
+                try {
+                    const errorData = JSON.parse(errorText);
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+                } catch (e) {
+                    errorMessage = errorText || "Failed to add book";
+                }
+                
+                showSnackbar(errorMessage, "error");
                 return;
             }
             console.log("[DEBUG] Book added successfully."); // Debug log
             addFormContainer.classList.add("hidden");
             appContainer.classList.remove("hidden");
             fetchBooks();
+            showSnackbar("Book added successfully!");
         } catch (err) {
             console.error("[DEBUG] Exception during /add-book request:", err); // Debug log
             if (addError) addError.textContent = err.message;
+            showSnackbar("Network error: " + err.message, "error");
         }
     });
 }
