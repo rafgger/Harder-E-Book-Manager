@@ -8,8 +8,19 @@
     <link rel="stylesheet" href="print.css" media="print">
 </head>
 <body>
-    <div id="app">
-        <h1>E-Book Collection</h1>
+    <div id="login-container" class="centered hidden">
+        <form id="login-form">
+            <h2>Login</h2>
+            <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+            <button type="submit">Login</button>
+            <div id="login-error" class="error"></div>
+        </form>
+    </div>
+    <div id="app" class="hidden">
+        <div class="header-bar">
+            <h1>E-Book Collection</h1>
+            <button id="logout-btn" class="hidden">Logout</button>
+        </div>
         <div id="book-list" class="grid"></div>
         <div id="book-detail" class="hidden"></div>
         <button id="back-btn" class="hidden">Back to list</button>
