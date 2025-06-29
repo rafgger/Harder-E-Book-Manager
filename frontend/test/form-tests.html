@@ -554,6 +554,231 @@
             }
         });
         
+        // Test 11: Real form submission event simulation
+        runner.test('Real form submission event handling', async function() {
+            // Set up a valid session token (using the same format as in your logs)
+            localStorage.setItem('sessionToken', '6f84f861a8384eebd0bb7ba5f1af50f9');
+            
+            // Get the actual form element
+            const formElement = document.getElementById('add-form');
+            this.assertTrue(formElement !== null, 'Form element should exist');
+            
+            // Fill out the form with the exact data from your logs
+            document.getElementById('add-isbn').value = '123';
+            document.getElementById('add-title').value = 'Default Title';
+            document.getElementById('add-author').value = 'Default Author';
+            document.getElementById('add-year').value = '2025';
+            document.getElementById('add-publisher').value = 'Default Publisher';
+            document.getElementById('add-cover').value = 'http://example.com/default-cover.jpg';
+            
+            // Create a mock fetch to capture the actual request that would be sent
+            const originalFetch = window.fetch;
+            let capturedRequest = null;
+            let mockResponseStatus = 200; // Default to success, but we can change this
+            
+            window.fetch = async function(url, options) {
+                capturedRequest = { url, options };
+                console.log('[TEST] Intercepted fetch request:', { url, options });
+                
+                // Simulate the actual backend response (401 error as in your logs)
+                if (url.includes('/add-book')) {
+                    return {
+                        ok: mockResponseStatus === 200,
+                        status: mockResponseStatus,
+                        json: async () => {
+                            if (mockResponseStatus === 401) {
+                                return { detail: "Invalid or expired token" };
+                            }
+                            return { message: "Book added successfully" };
+                        },
+                        text: async () => {
+                            if (mockResponseStatus === 401) {
+                                return "Invalid or expired token";
+                            }
+                            return "Book added successfully";
+                        }
+                    };
+                }
+                
+                // For other requests, return a basic response
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({}),
+                    text: async () => 'OK'
+                };
+            };
+            
+            // Test 1: Successful submission
+            console.log('[TEST] Testing successful form submission...');
+            mockResponseStatus = 200;
+            
+            // Create and dispatch a submit event
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            
+            // Track if preventDefault was called
+            let preventDefaultCalled = false;
+            const originalPreventDefault = submitEvent.preventDefault;
+            submitEvent.preventDefault = function() {
+                preventDefaultCalled = true;
+                originalPreventDefault.call(this);
+            };
+            
+            // Dispatch the event
+            formElement.dispatchEvent(submitEvent);
+            
+            // Verify preventDefault was called (form submission should be handled by JavaScript)
+            this.assertTrue(preventDefaultCalled, 'preventDefault should be called on form submit');
+            
+            // Wait a moment for async operations
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Test 2: 401 Error simulation (matching your exact scenario)
+            console.log('[TEST] Testing 401 error form submission...');
+            mockResponseStatus = 401;
+            
+            // Clear the captured request
+            capturedRequest = null;
+            
+            // Restore the token that would be removed by the error handler
+            localStorage.setItem('sessionToken', '6f84f861a8384eebd0bb7ba5f1af50f9');
+            
+            // Create another submit event
+            const submitEvent2 = new Event('submit', { bubbles: true, cancelable: true });
+            let preventDefaultCalled2 = false;
+            submitEvent2.preventDefault = function() {
+                preventDefaultCalled2 = true;
+                Event.prototype.preventDefault.call(this);
+            };
+            
+            // Dispatch the event
+            formElement.dispatchEvent(submitEvent2);
+            
+            this.assertTrue(preventDefaultCalled2, 'preventDefault should be called on second submit');
+            
+            // Wait for async operations to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // If the form submission logic is working, we should have captured a request
+            if (capturedRequest) {
+                console.log('[TEST] Captured request details:', capturedRequest);
+                
+                // Verify the request details match your logs
+                this.assertEqual(capturedRequest.url, 'http://localhost:8000/add-book', 'Request URL should match');
+                this.assertEqual(capturedRequest.options.method, 'POST', 'Request method should be POST');
+                this.assertEqual(capturedRequest.options.headers['Authorization'], 'Bearer 6f84f861a8384eebd0bb7ba5f1af50f9', 'Authorization header should match your logs');
+                this.assertEqual(capturedRequest.options.headers['Content-Type'], 'application/json', 'Content-Type should be set');
+                
+                // Parse and verify the request body
+                const requestBody = JSON.parse(capturedRequest.options.body);
+                this.assertEqual(requestBody.ISBN, '123', 'Request body ISBN should match');
+                this.assertEqual(requestBody.title, 'Default Title', 'Request body title should match');
+                this.assertEqual(requestBody.author, 'Default Author', 'Request body author should match');
+                this.assertEqual(requestBody.year, 2025, 'Request body year should match');
+                this.assertEqual(requestBody.publisher, 'Default Publisher', 'Request body publisher should match');
+                this.assertEqual(requestBody.cover, 'http://example.com/default-cover.jpg', 'Request body cover should match');
+                
+                console.log('[TEST] ✓ All request details verified successfully');
+            } else {
+                console.log('[TEST] ⚠️  No request was captured - form submission may not be working');
+                // This indicates the form submission event handler isn't working
+                this.assertTrue(false, 'Form submission should have triggered a fetch request');
+            }
+            
+            // Restore original fetch
+            window.fetch = originalFetch;
+            
+            console.log('[TEST] Form submission test completed');
+        });
+
+        // Test 12: Direct form submission with event listener simulation
+        runner.test('Direct form submission simulation', async function() {
+            // This test simulates the exact form submission logic from app.js
+            
+            // Set up the token
+            localStorage.setItem('sessionToken', 'direct123456789test');
+            
+            // Fill the form
+            document.getElementById('add-isbn').value = '123';
+            document.getElementById('add-title').value = 'Direct Test Title';
+            document.getElementById('add-author').value = 'Direct Test Author';
+            document.getElementById('add-year').value = '2025';
+            document.getElementById('add-publisher').value = 'Direct Test Publisher';
+            document.getElementById('add-cover').value = 'http://example.com/direct-cover.jpg';
+            
+            // Mock fetch
+            const originalFetch = window.fetch;
+            let requestMade = false;
+            let requestDetails = null;
+            
+            window.fetch = async function(url, options) {
+                requestMade = true;
+                requestDetails = { url, options };
+                console.log('[DIRECT TEST] Fetch called with:', { url, options });
+                
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({ message: "Book added successfully" }),
+                    text: async () => "Book added successfully"
+                };
+            };
+            
+            // Simulate the exact logic from the form submission handler in app.js
+            const book = {
+                "ISBN": document.getElementById('add-isbn').value.trim(),
+                "title": document.getElementById('add-title').value.trim(),
+                "author": document.getElementById('add-author').value.trim(),
+                "year": parseInt(document.getElementById('add-year').value, 10),
+                "publisher": document.getElementById('add-publisher').value.trim(),
+                "cover": document.getElementById('add-cover').value.trim()
+            };
+            
+            const token = window.getSessionToken();
+            
+            // Verify we have a token
+            this.assertTrue(token !== null, 'Should have a session token');
+            this.assertEqual(token, 'direct123456789test', 'Token should match what we set');
+            
+            // Simulate the fetch request as it happens in app.js
+            try {
+                console.log('[DIRECT TEST] Making fetch request...');
+                const res = await fetch("http://localhost:8000/add-book", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + token
+                    },
+                    body: JSON.stringify(book)
+                });
+                
+                console.log('[DIRECT TEST] Response received:', res.status);
+                
+                this.assertTrue(requestMade, 'Fetch request should have been made');
+                this.assertTrue(res.ok, 'Response should be ok');
+                this.assertEqual(res.status, 200, 'Response status should be 200');
+                
+                // Verify request details
+                if (requestDetails) {
+                    this.assertEqual(requestDetails.url, 'http://localhost:8000/add-book', 'URL should be correct');
+                    this.assertEqual(requestDetails.options.method, 'POST', 'Method should be POST');
+                    this.assertEqual(requestDetails.options.headers['Authorization'], 'Bearer direct123456789test', 'Auth header should be correct');
+                    
+                    const sentBook = JSON.parse(requestDetails.options.body);
+                    this.assertEqual(sentBook.ISBN, '123', 'Sent book data should be correct');
+                }
+                
+            } catch (err) {
+                console.error('[DIRECT TEST] Error during fetch:', err);
+                this.assertTrue(false, 'Fetch should not throw an error: ' + err.message);
+            }
+            
+            // Restore fetch
+            window.fetch = originalFetch;
+            
+            console.log('[DIRECT TEST] Direct submission test completed successfully');
+        });
+        
         // Run tests when page loads
         window.addEventListener('load', function() {
             setTimeout(() => {

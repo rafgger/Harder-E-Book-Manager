@@ -10,6 +10,7 @@ from sqlalchemy.future import select
 import os
 import json
 import config
+import base64
 
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import secrets
@@ -113,36 +114,52 @@ async def get_book(isbn: str):
         }
 
 # Authentication dependency
-async def authenticate(
-    credentials: HTTPBasicCredentials = Depends(security),
-    authorization: str = Header(None)
-):
+async def authenticate(authorization: str = Header(None)):
     # Always reload sessions from disk to get the latest tokens
     global sessions
     sessions = load_sessions()
     print("[DEBUG] Incoming Authorization header:", authorization)
     print("[DEBUG] Current session tokens:", sessions)
-    print("[DEBUG] Sessions file path:", SESSIONS_FILE)
-    print("[DEBUG] Sessions file exists:", os.path.exists(SESSIONS_FILE))
-    if authorization and authorization.startswith("Bearer "):
+    
+    if not authorization:
+        print("[DEBUG] No Authorization header provided")
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    if authorization.startswith("Bearer "):
         token = authorization.split(" ", 1)[1]
-        print("[DEBUG] Extracted token:", token)
+        print("[DEBUG] Extracted Bearer token:", token)
         print("[DEBUG] Token type:", type(token))
         print("[DEBUG] Sessions type:", type(sessions))
         print("[DEBUG] Is token in sessions?:", token in sessions)
         if token in sessions:
-            print("[DEBUG] Token is valid.")
+            print("[DEBUG] Bearer token is valid.")
             return True
-        print("[DEBUG] Token is invalid or expired.")
+        print("[DEBUG] Bearer token is invalid or expired.")
         print("[DEBUG] All tokens in sessions:")
         for i, session_token in enumerate(sessions):
             print(f"[DEBUG]   {i}: {session_token} (type: {type(session_token)})")
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    correct_password = config.PASSWORD
-    if not secrets.compare_digest(credentials.password, correct_password):
-        print("[DEBUG] Incorrect password for HTTP Basic Auth.")
-        raise HTTPException(status_code=401, detail="Incorrect password")
-    print("[DEBUG] HTTP Basic Auth successful.")
+    
+    if authorization.startswith("Basic "):
+        # Handle HTTP Basic Auth for backwards compatibility
+        try:
+            credentials_b64 = authorization.split(" ", 1)[1]
+            credentials = base64.b64decode(credentials_b64).decode('utf-8')
+            username, password = credentials.split(":", 1)
+            print("[DEBUG] HTTP Basic Auth attempt with username:", username)
+            correct_password = config.PASSWORD
+            if secrets.compare_digest(password, correct_password):
+                print("[DEBUG] HTTP Basic Auth successful.")
+                return True
+            else:
+                print("[DEBUG] Incorrect password for HTTP Basic Auth.")
+                raise HTTPException(status_code=401, detail="Incorrect password")
+        except Exception as e:
+            print("[DEBUG] Failed to parse Basic Auth:", str(e))
+            raise HTTPException(status_code=401, detail="Invalid Basic Auth format")
+    
+    print("[DEBUG] Authorization header format not recognized:", authorization)
+    raise HTTPException(status_code=401, detail="Not authenticated")
     return True
 
 @app.post("/login")
@@ -159,6 +176,11 @@ async def login(credentials: HTTPBasicCredentials = Depends(security)):
     print("[DEBUG] Generated new token and saved to sessions:", token)
     return {"token": token}
 
+@app.get("/test-auth")
+async def test_auth_endpoint(auth: bool = Depends(authenticate)):
+    """Test endpoint to verify authentication is working"""
+    return {"message": "Authentication successful!", "auth": auth}
+
 @app.post("/add-book")
 async def add_book(book: dict, auth: bool = Depends(authenticate)):
     try:
@@ -168,9 +190,34 @@ async def add_book(book: dict, auth: bool = Depends(authenticate)):
             if field not in book:
                 raise HTTPException(status_code=400, detail=f"Missing field: {field}")
 
-        # Simulate adding the book (replace with actual logic)
-        print("[DEBUG] Adding book:", book)
+        print("[DEBUG] Adding book to database:", book)
+        
+        # Actually add the book to the database
+        async with SessionLocal() as session:
+            # Check if book with this ISBN already exists
+            existing_book = await session.execute(
+                select(Book).where(Book.isbn == book["ISBN"])
+            )
+            if existing_book.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Book with this ISBN already exists")
+            
+            # Create new book
+            new_book = Book(
+                isbn=book["ISBN"],
+                title=book["title"],
+                author=book["author"],
+                year=book["year"],
+                publisher=book["publisher"],
+                cover=book["cover"]
+            )
+            
+            session.add(new_book)
+            await session.commit()
+            print("[DEBUG] Book successfully added to database")
+            
         return {"message": "Book added successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         print("[ERROR] Exception in /add-book:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
