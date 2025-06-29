@@ -6,10 +6,10 @@ base_url = "http://localhost:8000"
 
 def test_login_and_add_book():
     print("=== Testing Login ===")
-    # Test login
+    # Test login - use correct username:password (user:123)
     login_response = requests.post(
         f"{base_url}/login",
-        headers={"Authorization": "Basic OmRlbW8="}  # :demo in base64
+        auth=("user", "123")  # This is the correct way to do HTTP Basic Auth
     )
     print(f"Login status: {login_response.status_code}")
     if login_response.status_code == 200:
@@ -19,7 +19,7 @@ def test_login_and_add_book():
         print("\n=== Testing Add Book ===")
         # Test add book
         book_data = {
-            "ISBN": "123",
+            "ISBN": "12223",
             "title": "Test Book",
             "author": "Test Author",
             "year": 2025,

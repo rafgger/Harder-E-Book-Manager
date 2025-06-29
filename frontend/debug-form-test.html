@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frontend Form Submission Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Form Submission Test</h1>
+    <p>This will test the exact same form submission that your frontend is doing.</p>
+    
+    <div class="test-section">
+        <h3>Step 1: Test Backend Connectivity</h3>
+        <button onclick="testBackend()">Test Backend</button>
+        <div id="backend-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 2: Test Login (HTTP Basic Auth)</h3>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 3: Test Frontend Token (from your logs)</h3>
+        <button onclick="testFrontendToken()">Test Frontend Token</button>
+        <div id="frontend-token-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 4: Simulate Exact Frontend Form Submission</h3>
+        <button onclick="simulateFormSubmission()">Simulate Form Submit</button>
+        <div id="form-result"></div>
+    </div>
+    
+    <div id="logs" class="log">Test logs will appear here...\n</div>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            document.getElementById('logs').textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        function showResult(elementId, message, type) {
+            const div = document.getElementById(elementId);
+            div.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function testBackend() {
+            log('Testing backend connectivity...');
+            try {
+                const response = await fetch('http://localhost:8000/books');
+                log(`Backend response: ${response.status}`);
+                if (response.ok) {
+                    showResult('backend-result', '✅ Backend is accessible', 'success');
+                } else {
+                    showResult('backend-result', `⚠️ Backend returned ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Backend error: ${error.message}`);
+                showResult('backend-result', `❌ Backend not accessible: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            log('Testing login with HTTP Basic Auth...');
+            try {
+                // Create base64 encoded credentials for HTTP Basic Auth
+                const credentials = btoa('user:123');
+                const response = await fetch('http://localhost:8000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${credentials}`
+                    }
+                });
+                
+                log(`Login response: ${response.status}`);
+                const responseText = await response.text();
+                log(`Login response body: ${responseText}`);
+                
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    const token = data.token;
+                    log(`Got fresh token: ${token}`);
+                    showResult('login-result', `✅ Login successful! Token: ${token}`, 'success');
+                    
+                    // Store the fresh token for later tests
+                    window.freshToken = token;
+                } else {
+                    showResult('login-result', `❌ Login failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Login error: ${error.message}`);
+                showResult('login-result', `❌ Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFrontendToken() {
+            log('Testing the problematic frontend token...');
+            const frontendToken = '6f84f861a8384eebd0bb7ba5f1af50f9';
+            
+            const bookData = {
+                "ISBN": "123",
+                "title": "Default Title", 
+                "author": "Default Author",
+                "year": 2025,
+                "publisher": "Default Publisher",
+                "cover": "http://example.com/default-cover.jpg"
+            };
+            
+            log(`Testing token: ${frontendToken}`);
+            log(`Book data: ${JSON.stringify(bookData)}`);
+            
+            try {
+                const response = await fetch('http://localhost:8000/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${frontendToken}`
+                    },
+                    body: JSON.stringify(bookData)
+                });
+                
+                log(`Frontend token response: ${response.status}`);
+                const responseText = await response.text();
+                log(`Frontend token response body: ${responseText}`);
+                
+                if (response.status === 401) {
+                    showResult('frontend-token-result', `❌ Frontend token is INVALID (401) - This explains your error!`, 'error');
+                } else if (response.ok) {
+                    showResult('frontend-token-result', `✅ Frontend token works fine - Issue might be elsewhere`, 'success');
+                } else {
+                    showResult('frontend-token-result', `⚠️ Unexpected response: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Frontend token error: ${error.message}`);
+                showResult('frontend-token-result', `❌ Frontend token test error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function simulateFormSubmission() {
+            log('Simulating exact frontend form submission...');
+            
+            // Use fresh token if available, otherwise use the problematic one
+            const token = window.freshToken || '6f84f861a8384eebd0bb7ba5f1af50f9';
+            log(`Using token: ${token}`);
+            
+            // First test the simple auth endpoint
+            log('Testing simple auth endpoint first...');
+            try {
+                const authTestResponse = await fetch('http://localhost:8000/test-auth', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                log(`Auth test response: ${authTestResponse.status}`);
+                const authTestText = await authTestResponse.text();
+                log(`Auth test body: ${authTestText}`);
+                
+                if (authTestResponse.ok) {
+                    log('✅ Simple auth test passed!');
+                } else {
+                    log('❌ Simple auth test failed!');
+                    showResult('form-result', `❌ Authentication test failed: ${authTestResponse.status}`, 'error');
+                    return;
+                }
+            } catch (error) {
+                log(`Auth test error: ${error.message}`);
+                showResult('form-result', `❌ Auth test error: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Now test the actual form submission
+            // Simulate exactly what frontend does
+            const book = {
+                "ISBN": "123",
+                "title": "Default Title",
+                "author": "Default Author", 
+                "year": 2025,
+                "publisher": "Default Publisher",
+                "cover": "http://example.com/default-cover.jpg"
+            };
+            
+            log(`[DEBUG] Submitting book to /add-book: ${JSON.stringify(book)}`);
+            log(`[DEBUG] Outgoing Authorization header: Bearer ${token}`);
+            
+            try {
+                const response = await fetch('http://localhost:8000/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(book)
+                });
+                
+                log(`[DEBUG] Response status: ${response.status}`);
+                const responseText = await response.text();
+                log(`[DEBUG] Response body: ${responseText}`);
+                
+                if (response.ok) {
+                    showResult('form-result', `✅ Form submission successful!`, 'success');
+                    log('[DEBUG] Form submission completed successfully');
+                } else if (response.status === 401) {
+                    showResult('form-result', `❌ Form submission failed with 401 - Token expired/invalid`, 'error');
+                    log('[DEBUG] Session expired. This matches your frontend logs!');
+                } else {
+                    showResult('form-result', `⚠️ Form submission failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`[DEBUG] Network error: ${error.message}`);
+                showResult('form-result', `❌ Form submission error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run first test
+        window.addEventListener('load', function() {
+            log('Form submission test page loaded');
+            setTimeout(testBackend, 500);
+        });
+    </script>
+</body>
+</html>

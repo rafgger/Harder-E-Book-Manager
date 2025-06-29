@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Status Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Backend Server Status Check</h1>
+    <div id="results">Checking server status...</div>
+    
+    <script>
+        async function checkServer() {
+            const resultsDiv = document.getElementById('results');
+            
+            // Test 1: Basic server connection
+            try {
+                const response = await fetch('http://localhost:8000/', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                resultsDiv.innerHTML += `<div class="status success">✓ Server is running! Status: ${response.status}</div>`;
+                
+                // Test 2: Check if FastAPI docs are accessible
+                try {
+                    const docsResponse = await fetch('http://localhost:8000/docs', {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    resultsDiv.innerHTML += `<div class="status success">✓ FastAPI docs accessible! Status: ${docsResponse.status}</div>`;
+                } catch (docsError) {
+                    resultsDiv.innerHTML += `<div class="status error">✗ Docs not accessible: ${docsError.message}</div>`;
+                }
+                
+                // Test 3: Test CORS preflight
+                try {
+                    const corsResponse = await fetch('http://localhost:8000/books', {
+                        method: 'OPTIONS',
+                        mode: 'cors',
+                        headers: {
+                            'Access-Control-Request-Method': 'GET',
+                            'Access-Control-Request-Headers': 'Content-Type'
+                        }
+                    });
+                    resultsDiv.innerHTML += `<div class="status success">✓ CORS preflight successful! Status: ${corsResponse.status}</div>`;
+                } catch (corsError) {
+                    resultsDiv.innerHTML += `<div class="status error">✗ CORS preflight failed: ${corsError.message}</div>`;
+                }
+                
+                // Test 4: Simple API call
+                try {
+                    const apiResponse = await fetch('http://localhost:8000/books', {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    const apiData = await apiResponse.text();
+                    resultsDiv.innerHTML += `<div class="status success">✓ API call successful! Status: ${apiResponse.status}</div>`;
+                    resultsDiv.innerHTML += `<div class="status info">Response preview: ${apiData.substring(0, 200)}...</div>`;
+                } catch (apiError) {
+                    resultsDiv.innerHTML += `<div class="status error">✗ API call failed: ${apiError.message}</div>`;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="status error">✗ Server connection failed: ${error.message}</div>`;
+                resultsDiv.innerHTML += `<div class="status info">Make sure the backend server is running on localhost:8000</div>`;
+                resultsDiv.innerHTML += `<div class="status info">Try running: cd backend && python main.py</div>`;
+            }
+        }
+        
+        // Run check when page loads
+        window.addEventListener('load', checkServer);
+    </script>
+</body>
+</html>
