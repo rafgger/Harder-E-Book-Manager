@@ -129,7 +129,7 @@ async def add_book(book: dict, auth: bool = Depends(authenticate)):
 async def import_books(auth: bool = Depends(authenticate)):
     # Import books from books.json
     try:
-        with open("books.json", "r", encoding="utf-8") as f:
+        with open("../books.json", "r", encoding="utf-8") as f:
             books = json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read books.json: {e}")
