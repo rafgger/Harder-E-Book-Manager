@@ -9,6 +9,11 @@ const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const appContainer = document.getElementById("app");
 const importBtn = document.getElementById("import-btn");
+const addBtn = document.getElementById("add-btn");
+const addFormContainer = document.getElementById("add-form-container");
+const addForm = document.getElementById("add-form");
+const cancelAdd = document.getElementById("cancel-add");
+const addError = document.getElementById("add-error");
 let sessionToken = null;
 
 function showOverview() {
@@ -196,6 +201,55 @@ if (importBtn) {
         } catch (e) {
             console.error("Error during import:", e); // Debugging log
             alert(`Error: ${e.message}`);
+        }
+    });
+}
+
+if (addBtn && addFormContainer) {
+    addBtn.addEventListener("click", () => {
+        addFormContainer.classList.remove("hidden");
+        appContainer.classList.add("hidden");
+        if (addError) addError.textContent = "";
+        addForm.reset();
+    });
+}
+if (cancelAdd && addFormContainer && appContainer) {
+    cancelAdd.onclick = function(e) {
+        e.preventDefault();
+        addFormContainer.classList.add("hidden");
+        appContainer.classList.remove("hidden");
+    };
+}
+if (addForm) {
+    addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const book = {
+            ISBN: document.getElementById("add-isbn").value.trim(),
+            title: document.getElementById("add-title").value.trim(),
+            author: document.getElementById("add-author").value.trim(),
+            year: parseInt(document.getElementById("add-year").value, 10),
+            publisher: document.getElementById("add-publisher").value.trim(),
+            cover: document.getElementById("add-cover").value.trim()
+        };
+        try {
+            const res = await fetch("http://localhost:8000/add-book", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + sessionToken
+                },
+                body: JSON.stringify(book)
+            });
+            if (!res.ok) {
+                const errorText = await res.text();
+                if (addError) addError.textContent = errorText;
+                return;
+            }
+            addFormContainer.classList.add("hidden");
+            appContainer.classList.remove("hidden");
+            fetchBooks();
+        } catch (err) {
+            if (addError) addError.textContent = err.message;
         }
     });
 }
