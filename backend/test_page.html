@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Submission Test - Same Origin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-result { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; border-radius: 4px; }
+        .test-pass { border-color: #4CAF50; background-color: #f0f8f0; }
+        .test-fail { border-color: #f44336; background-color: #fdf0f0; }
+        .test-info { border-color: #2196F3; background-color: #f0f8ff; }
+        .log { font-family: monospace; font-size: 12px; background: #f9f9f9; padding: 10px; margin: 10px 0; border-radius: 4px; white-space: pre-wrap; }
+        h1 { color: #333; }
+        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Same-Origin Form Submission Test</h1>
+        <p>Testing form submission without CORS issues (same origin)</p>
+        
+        <div id="status" class="test-result test-info">Ready to test...</div>
+        
+        <button class="btn-primary" onclick="testLoginAndAddBook()">Test Complete Flow</button>
+        <div id="result"></div>
+        
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.textContent += `[${timestamp}] ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function showResult(message, success) {
+            const element = document.getElementById('result');
+            element.className = success ? 'test-result test-pass' : 'test-result test-fail';
+            element.innerHTML = (success ? '✓ ' : '✗ ') + message;
+        }
+        
+        async function testLoginAndAddBook() {
+            log('Starting complete flow test...');
+            document.getElementById('status').textContent = 'Testing...';
+            
+            try {
+                // Step 1: Login
+                log('Step 1: Testing login...');
+                const loginResponse = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'user', password: 'pass' })
+                });
+                
+                log(`Login status: ${loginResponse.status}`);
+                const loginData = await loginResponse.text();
+                log(`Login response: ${loginData}`);
+                
+                if (!loginResponse.ok) {
+                    showResult(`Login failed: ${loginResponse.status}`, false);
+                    return;
+                }
+                
+                const { token } = JSON.parse(loginData);
+                log(`Got new token: ${token}`);
+                
+                // Step 2: Add book with new token
+                log('Step 2: Testing add-book with new token...');
+                const bookData = {
+                    "ISBN": "same-origin-test-123",
+                    "title": "Same Origin Test Book",
+                    "author": "Test Author",
+                    "year": 2025,
+                    "publisher": "Test Publisher",
+                    "cover": "http://example.com/cover.jpg"
+                };
+                
+                log(`Sending book data: ${JSON.stringify(bookData)}`);
+                log(`Using Authorization: Bearer ${token}`);
+                
+                const bookResponse = await fetch('/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bookData)
+                });
+                
+                log(`Add-book status: ${bookResponse.status}`);
+                const bookResponseData = await bookResponse.text();
+                log(`Add-book response: ${bookResponseData}`);
+                
+                if (bookResponse.ok) {
+                    showResult('Complete flow successful! Login + Add Book both worked.', true);
+                    document.getElementById('status').textContent = 'Test passed!';
+                    
+                    // Step 3: Test with the problematic token from frontend logs
+                    log('Step 3: Testing with frontend token...');
+                    const frontendToken = '6f84f861a8384eebd0bb7ba5f1af50f9';
+                    
+                    const frontendTestResponse = await fetch('/add-book', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${frontendToken}`
+                        },
+                        body: JSON.stringify({
+                            "ISBN": "frontend-token-test",
+                            "title": "Frontend Token Test",
+                            "author": "Frontend Author",
+                            "year": 2025,
+                            "publisher": "Frontend Publisher",
+                            "cover": "http://example.com/frontend-cover.jpg"
+                        })
+                    });
+                    
+                    log(`Frontend token test status: ${frontendTestResponse.status}`);
+                    const frontendResponseData = await frontendTestResponse.text();
+                    log(`Frontend token response: ${frontendResponseData}`);
+                    
+                    if (frontendTestResponse.status === 401) {
+                        log('FOUND THE ISSUE! The frontend token 6f84f861a8384eebd0bb7ba5f1af50f9 is indeed returning 401!');
+                        showResult('Frontend token is invalid! This explains the 401 error in your logs.', false);
+                    } else if (frontendTestResponse.ok) {
+                        log('Interesting: Frontend token actually works from same origin!');
+                        showResult('Frontend token works from same origin - CORS might be the issue!', true);
+                    }
+                    
+                } else {
+                    showResult(`Add-book failed: ${bookResponse.status} - ${bookResponseData}`, false);
+                    document.getElementById('status').textContent = 'Test failed!';
+                }
+                
+            } catch (error) {
+                log(`Error: ${error.message}`);
+                showResult(`Test error: ${error.message}`, false);
+                document.getElementById('status').textContent = 'Test error!';
+            }
+        }
+        
+        // Auto-run test when page loads
+        window.addEventListener('load', function() {
+            log('Same-origin test page loaded');
+            setTimeout(testLoginAndAddBook, 1000);
+        });
+    </script>
+</body>
+</html>

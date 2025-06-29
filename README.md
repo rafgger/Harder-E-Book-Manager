@@ -1,14 +1,17 @@
 # E-Book Manager
 
-A minimalist web application for managing e-books with a FastAPI backend and a modern, responsive frontend.
+A minimalist web application for managing e-books with a FastAPI backend and a modern, responsive frontend featuring session-based authentication and real-time notifications.
 
 ## Features
-- Simple authentication (password stored in `backend/config.py`)
-- Add new books with validation
-- Import books from a `books.json` file
-- Responsive, minimalist UI (plain JavaScript, SASS)
-- PostgreSQL database integration
-- Mocha/Chai frontend tests
+- **Session-based authentication** with Bearer token support
+- **Add new books** with comprehensive validation and duplicate checking
+- **Import books** from a `books.json` file with progress feedback
+- **Real-time notifications** via snackbar alerts for all user actions
+- **Responsive, minimalist UI** (plain JavaScript, CSS)
+- **PostgreSQL database integration** with full CRUD operations
+- **Comprehensive test suite** for both frontend and backend
+- **CORS support** for cross-origin requests
+- **Robust error handling** with user-friendly messages
 
 ## Installation & Setup
 
@@ -24,42 +27,317 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 3. **Set password:**
    - Edit `backend/config.py` and set your desired password:
      ```python
-     PASSWORD = "yourpassword"
+     PASSWORD = "123"
      ```
 4. **Run the backend:**
    ```sh
    uvicorn main:app --reload
    ```
+   The backend will be available at `http://localhost:8000` with interactive API docs at `http://localhost:8000/docs`
 
 ### Frontend
-1. Open `frontend/index.html` in your browser.
-2. For tests, open `frontend/test/index.html` to view Mocha/Chai test results.
+1. **Open the application:**
+   - Open `frontend/index.html` in your browser
+   - Or serve it from a local server for better CORS handling
+
+2. **Login credentials:**
+   - Username: `user`
+   - Password: `123` (or whatever you set in `backend/config.py`)
 
 ### SASS/CSS
 - Edit styles in `src/style.scss` and compile to `frontend/style.css` as needed.
 
 ## Usage
-- **Login:** Use the password set in `backend/config.py`.
-- **Add Book:** Fill out the form and submit. All fields are required.
-- **Import Books:** Click the import button to load books from `books.json`.
+- **Login:** Use username `user` and the password set in `backend/config.py`
+- **Add Book:** Click the `+` button, fill out the form (all fields required), and submit
+- **Import Books:** Click "Import Books" to load books from `books.json`
+- **Visual Feedback:** Green snackbars for success, red for errors
+- **Session Management:** Automatic logout on token expiration with clear notifications
+
+## API Endpoints
+- `POST /login` - Authenticate with HTTP Basic Auth
+- `GET /books` - Get all books (requires Bearer token)
+- `GET /books/{isbn}` - Get specific book (requires Bearer token)
+- `POST /add-book` - Add new book (requires Bearer token)
+- `POST /import-books` - Import books from JSON (requires Bearer token)
 
 ## Testing
 - **Backend:**
   ```sh
   cd backend
-  pytest
+  python test_auth_flow.py  # Test authentication flow
+  python end_to_end_test.py # Test complete API flow
   ```
 - **Frontend:**
-  Open `frontend/test/index.html` in your browser.
+  - Open `frontend/test/form-tests.html` for comprehensive form tests
+  - Open `frontend/debug-form-test.html` for real backend testing
+
+## Available Tests
+
+### Backend Test Suite
+
+#### Core Testing Scripts
+##### `test_auth_flow.py`
+- **Purpose:** Tests the complete authentication and book addition workflow
+- **Functionality:**
+  - Validates HTTP Basic Auth login process
+  - Tests Bearer token authentication for protected endpoints
+  - Verifies book addition with proper authorization
+  - Confirms database persistence of added books
+- **Usage:** `python test_auth_flow.py`
+
+##### `end_to_end_test.py`
+- **Purpose:** Comprehensive API testing suite
+- **Functionality:**
+  - Tests server connectivity and availability
+  - Validates login endpoint with various scenarios
+  - Tests book addition with different data formats
+  - Verifies book retrieval functionality
+  - Tests error handling and validation
+- **Usage:** `python end_to_end_test.py`
+
+##### `complete_test.py`
+- **Purpose:** Full flow testing using Python's urllib (no external dependencies)
+- **Functionality:**
+  - Tests login flow identical to frontend implementation
+  - Validates book addition with pure Python HTTP requests
+  - Demonstrates backend compatibility with different HTTP libraries
+- **Usage:** `python complete_test.py`
+
+#### Authentication & Token Testing
+##### `token_test.py`
+- **Purpose:** Specific token validation testing
+- **Functionality:**
+  - Tests problematic tokens from frontend logs
+  - Compares fresh vs. expired token behavior
+  - Diagnoses authentication issues
+- **Usage:** `python token_test.py`
+
+##### `test_auth_fix.py`
+- **Purpose:** Validates authentication system fixes
+- **Functionality:**
+  - Tests Bearer token authentication after system updates
+  - Verifies proper handling of authorization headers
+  - Confirms book addition with authenticated requests
+- **Usage:** `python test_auth_fix.py`
+
+#### Specialized Testing Scripts
+##### `test_add_book.py`
+- **Purpose:** Focused book addition testing
+- **Functionality:**
+  - Tests manual book addition workflow
+  - Validates book data persistence
+  - Tests authorization headers formatting
+- **Usage:** `python test_add_book.py` (update password variable first)
+
+##### `simple_test.py`
+- **Purpose:** Basic connectivity and functionality testing
+- **Functionality:**
+  - Tests server connection and availability
+  - Basic login functionality testing
+  - Simple book addition testing
+- **Usage:** `python simple_test.py`
+
+##### `quick_test.py`, `manual_test.py`
+- **Purpose:** Quick debugging and manual testing utilities
+- **Functionality:** Minimal test scripts for rapid debugging
+- **Usage:** `python [script_name].py`
+
+### Frontend Test Suite
+
+#### Comprehensive Testing Pages
+##### `frontend/test/form-tests.html`
+- **Purpose:** Comprehensive frontend form testing without backend dependency
+- **Functionality:**
+  - Session token retrieval and validation
+  - Book object construction from form data
+  - Authorization header formatting
+  - Book list rendering simulation
+  - UI state management testing
+  - Form prefill and cancellation logic
+  - Mock backend interaction testing
+  - Real form submission event simulation
+  - Error handling for various scenarios
+- **Coverage:** 12 comprehensive test cases
+- **Usage:** Open in browser, tests run automatically
+
+##### `frontend/test/test-runner.html`
+- **Purpose:** Mocha-based testing framework setup
+- **Functionality:**
+  - Professional test runner using Mocha and Chai
+  - Book rendering and display testing
+  - Login/logout flow validation
+  - Session token management verification
+  - Form input validation testing
+- **Usage:** Open in browser (requires Mocha/Chai from CDN)
+
+#### Real Backend Integration Tests
+##### `frontend/debug-form-test.html`
+- **Purpose:** Real-time testing with actual backend
+- **Functionality:**
+  - Backend connectivity verification
+  - Live HTTP Basic Auth login testing
+  - Bearer token validation with real tokens
+  - Actual form submission to backend
+  - Real-time error diagnosis
+  - CORS and network issue detection
+- **Usage:** Open in browser (requires running backend)
+
+##### `frontend/test/real-backend-test.html`
+- **Purpose:** Cross-origin request testing
+- **Functionality:**
+  - Tests form submission from file:// protocol
+  - CORS compatibility verification
+  - Network error identification
+  - Same-origin vs. cross-origin behavior comparison
+- **Usage:** Open in browser (requires running backend)
+
+#### Test Utilities
+##### `frontend/test/app.test.js`
+- **Purpose:** JavaScript unit test utilities
+- **Functionality:**
+  - Reusable test functions for frontend components
+  - Mock data and helper functions
+  - Integration with test HTML pages
+- **Usage:** Included in test HTML pages
+
+### Test Coverage Matrix
+
+| Test Area | Backend Tests | Frontend Tests | Coverage Level |
+|-----------|---------------|----------------|----------------|
+| **Authentication** | ✅ `test_auth_flow.py`<br>✅ `test_auth_fix.py`<br>✅ `token_test.py` | ✅ `debug-form-test.html`<br>✅ `form-tests.html` | Complete |
+| **Authorization** | ✅ Bearer token validation<br>✅ Session management | ✅ Token handling<br>✅ Header formatting | Complete |
+| **Database Operations** | ✅ Book CRUD operations<br>✅ Persistence validation<br>✅ Duplicate checking | ✅ Mock database tests<br>✅ Real backend integration | Complete |
+| **Form Handling** | ✅ Data validation<br>✅ Error responses | ✅ Form validation<br>✅ Submission logic<br>✅ Error handling | Complete |
+| **UI Interactions** | N/A | ✅ State management<br>✅ Visual feedback<br>✅ Snackbar notifications | Complete |
+| **Network Communications** | ✅ HTTP request/response<br>✅ Error codes | ✅ CORS handling<br>✅ Network errors<br>✅ Cross-origin requests | Complete |
+| **Error Scenarios** | ✅ Invalid auth<br>✅ Database errors<br>✅ Validation failures | ✅ Network failures<br>✅ Invalid tokens<br>✅ Form errors | Complete |
+| **User Experience** | ✅ API response times<br>✅ Error messages | ✅ Notifications<br>✅ Form prefilling<br>✅ Visual feedback | Complete |
+
+### Running Test Suites
+
+#### Backend Test Execution
+```bash
+cd backend
+
+# Run core authentication and functionality tests
+python test_auth_flow.py
+python end_to_end_test.py
+python complete_test.py
+
+# Run specialized tests
+python test_auth_fix.py
+python token_test.py
+python test_add_book.py
+
+# Quick connectivity tests
+python simple_test.py
+```
+
+#### Frontend Test Execution
+1. **Automated Unit Tests:**
+   - Open `frontend/test/form-tests.html` in browser
+   - Tests run automatically on page load
+   - View results in browser console and on page
+
+2. **Professional Test Runner:**
+   - Open `frontend/test/test-runner.html` in browser
+   - Uses Mocha/Chai framework for structured testing
+   - Interactive test results display
+
+3. **Real Backend Integration:**
+   - Start backend server: `uvicorn main:app --reload`
+   - Open `frontend/debug-form-test.html` in browser
+   - Performs live API testing with real server
+
+4. **CORS and Cross-Origin Testing:**
+   - Ensure backend is running
+   - Open `frontend/test/real-backend-test.html` in browser
+   - Tests file:// protocol compatibility
+
+#### Complete Test Run
+```bash
+# Terminal 1: Start backend
+cd backend
+uvicorn main:app --reload
+
+# Terminal 2: Run backend tests
+cd backend
+python test_auth_flow.py && python end_to_end_test.py && python complete_test.py
+
+# Browser: Open frontend test files
+# 1. frontend/test/form-tests.html
+# 2. frontend/debug-form-test.html
+# 3. frontend/test/real-backend-test.html
+```
+
+### Test Debugging and Reporting
+
+#### Backend Test Output
+- **Success Indicators:** HTTP 200 status codes, "Test passed" messages
+- **Failure Indicators:** HTTP 4xx/5xx status codes, exception tracebacks
+- **Debug Information:** Token values, request/response data, database states
+
+#### Frontend Test Output
+- **Browser Console:** Detailed test results and error messages
+- **Visual Indicators:** Green checkmarks for passed tests, red X for failures
+- **Interactive Results:** Click on test results for detailed information
+
+#### Common Test Issues and Solutions
+- **Backend Connection Failed:** Ensure `uvicorn main:app --reload` is running
+- **401 Unauthorized:** Check password in `config.py` matches test scripts
+- **CORS Errors:** Use a local server instead of opening HTML files directly
+- **Database Errors:** Verify PostgreSQL is running and `Books` database exists
+- **Token Validation Failed:** Check for expired sessions, restart backend if needed
+
+#### Test Data Management
+- **Test Books:** Tests create books with ISBNs like `test-*`, `auth-test-*`, `manual-*`
+- **Cleanup:** Test books persist in database - manually remove if needed
+- **Sessions:** Backend maintains session tokens in `sessions.pkl` file
 
 ## Project Structure
+## Project Structure
 ```
-backend/        # FastAPI backend
-frontend/       # Frontend (HTML, JS, CSS, tests)
-src/            # SASS source
-books.json      # Example books data
-README.md       # This file
+backend/                    # FastAPI backend
+├── main.py                # Main application with all endpoints
+├── config.py              # Configuration (password)
+├── requirements.txt       # Python dependencies
+├── sessions.pkl           # Session token storage
+├── test_auth_flow.py      # Authentication testing
+├── end_to_end_test.py     # Complete API testing
+└── debug_*.py             # Various debugging scripts
+
+frontend/                   # Frontend application
+├── index.html             # Main application page
+├── app.js                 # JavaScript application logic
+├── style.css              # Compiled CSS styles
+├── debug-form-test.html   # Real backend testing page
+└── test/                  # Test files
+    ├── form-tests.html    # Comprehensive form tests
+    └── *.js               # Test utilities
+
+src/                       # SASS source files
+├── style.scss             # Main SASS source
+
+books.json                 # Example books data for import
+Books.csv                  # Sample data in CSV format
+README.md                  # This file
 ```
+
+## Recent Improvements
+- ✅ **Fixed authentication system** - Proper Bearer token handling
+- ✅ **Added real database persistence** - Books are actually saved to PostgreSQL
+- ✅ **Implemented snackbar notifications** - Visual feedback for all actions
+- ✅ **Enhanced error handling** - User-friendly error messages
+- ✅ **Comprehensive testing** - Frontend and backend test suites
+- ✅ **Session management** - Robust token validation and cleanup
+- ✅ **CORS support** - Cross-origin request handling
+
+## Troubleshooting
+- **401 Unauthorized errors:** Ensure you're logged in and have a valid session token
+- **Database connection issues:** Verify PostgreSQL is running and the database exists
+- **Import failures:** Check that `books.json` exists and has the correct format
+- **CORS errors:** Serve the frontend from a local server instead of opening directly
 
 ## License
 MIT

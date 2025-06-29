@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Form Submission Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .test-result { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; border-radius: 4px; }
+        .test-pass { border-color: #4CAF50; background-color: #f0f8f0; }
+        .test-fail { border-color: #f44336; background-color: #fdf0f0; }
+        .test-info { border-color: #2196F3; background-color: #f0f8ff; }
+        .log { font-family: monospace; font-size: 12px; background: #f9f9f9; padding: 10px; margin: 10px 0; border-radius: 4px; white-space: pre-wrap; }
+        h1 { color: #333; }
+        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real Backend Form Submission Test</h1>
+        <p>This test will actually submit forms to the running backend at localhost:8000</p>
+        
+        <div id="status" class="test-result test-info">Ready to test...</div>
+        
+        <div class="form-group">
+            <h3>1. Login Test</h3>
+            <button class="btn-primary" onclick="testLogin()">Test Login</button>
+            <div id="login-result"></div>
+        </div>
+        
+        <div class="form-group">
+            <h3>2. Add Book Test (with known token)</h3>
+            <label for="test-token">Session Token:</label>
+            <input type="text" id="test-token" value="6f84f861a8384eebd0bb7ba5f1af50f9" placeholder="Enter session token">
+            <button class="btn-primary" onclick="testAddBookWithKnownToken()">Test Add Book</button>
+            <div id="add-book-result"></div>
+        </div>
+        
+        <div class="form-group">
+            <h3>3. Full Frontend Form Simulation</h3>
+            <p>This will simulate exactly what your frontend does:</p>
+            <div style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #f9f9f9;">
+                <div class="form-group">
+                    <label for="sim-isbn">ISBN:</label>
+                    <input type="text" id="sim-isbn" value="123">
+                </div>
+                <div class="form-group">
+                    <label for="sim-title">Title:</label>
+                    <input type="text" id="sim-title" value="Default Title">
+                </div>
+                <div class="form-group">
+                    <label for="sim-author">Author:</label>
+                    <input type="text" id="sim-author" value="Default Author">
+                </div>
+                <div class="form-group">
+                    <label for="sim-year">Year:</label>
+                    <input type="number" id="sim-year" value="2025">
+                </div>
+                <div class="form-group">
+                    <label for="sim-publisher">Publisher:</label>
+                    <input type="text" id="sim-publisher" value="Default Publisher">
+                </div>
+                <div class="form-group">
+                    <label for="sim-cover">Cover URL:</label>
+                    <input type="text" id="sim-cover" value="http://example.com/default-cover.jpg">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="simulateFrontendSubmission()">Simulate Frontend Form Submit</button>
+            <div id="frontend-sim-result"></div>
+        </div>
+        
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.textContent += `[${timestamp}] ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function showResult(elementId, message, success) {
+            const element = document.getElementById(elementId);
+            element.className = success ? 'test-result test-pass' : 'test-result test-fail';
+            element.innerHTML = (success ? '✓ ' : '✗ ') + message;
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `test-result test-${type}`;
+            statusDiv.textContent = message;
+        }
+        
+        async function testLogin() {
+            log('Testing login...');
+            updateStatus('Testing login...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'user',
+                        password: 'pass'
+                    })
+                });
+                
+                log(`Login response status: ${response.status}`);
+                const responseText = await response.text();
+                log(`Login response body: ${responseText}`);
+                
+                if (response.ok) {
+                    const data = JSON.parse(responseText);
+                    const token = data.token;
+                    log(`Received token: ${token}`);
+                    
+                    // Update the token field
+                    document.getElementById('test-token').value = token;
+                    
+                    showResult('login-result', `Login successful! Token: ${token}`, true);
+                    updateStatus('Login test passed', 'pass');
+                } else {
+                    showResult('login-result', `Login failed: ${response.status} - ${responseText}`, false);
+                    updateStatus('Login test failed', 'fail');
+                }
+            } catch (error) {
+                log(`Login error: ${error.message}`);
+                showResult('login-result', `Login error: ${error.message}`, false);
+                updateStatus('Login test error', 'fail');
+            }
+        }
+        
+        async function testAddBookWithKnownToken() {
+            const token = document.getElementById('test-token').value.trim();
+            
+            if (!token) {
+                showResult('add-book-result', 'No token provided', false);
+                return;
+            }
+            
+            log(`Testing add-book with token: ${token}`);
+            updateStatus('Testing add-book with known token...', 'info');
+            
+            const bookData = {
+                "ISBN": "test-isbn-123",
+                "title": "Test Book Title",
+                "author": "Test Author Name",
+                "year": 2025,
+                "publisher": "Test Publisher",
+                "cover": "http://example.com/test-cover.jpg"
+            };
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+            
+            log(`Request headers: ${JSON.stringify(headers, null, 2)}`);
+            log(`Request body: ${JSON.stringify(bookData, null, 2)}`);
+            
+            try {
+                const response = await fetch('http://localhost:8000/add-book', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(bookData)
+                });
+                
+                log(`Add-book response status: ${response.status}`);
+                const responseText = await response.text();
+                log(`Add-book response body: ${responseText}`);
+                
+                if (response.ok) {
+                    showResult('add-book-result', `Book added successfully! Response: ${responseText}`, true);
+                    updateStatus('Add-book test passed', 'pass');
+                } else {
+                    showResult('add-book-result', `Add-book failed: ${response.status} - ${responseText}`, false);
+                    updateStatus(`Add-book test failed (${response.status})`, 'fail');
+                    
+                    if (response.status === 401) {
+                        log('401 Unauthorized - The token may be invalid or expired');
+                        log('This matches the error you saw in the frontend!');
+                    }
+                }
+            } catch (error) {
+                log(`Add-book error: ${error.message}`);
+                showResult('add-book-result', `Add-book error: ${error.message}`, false);
+                updateStatus('Add-book test error', 'fail');
+            }
+        }
+        
+        async function simulateFrontendSubmission() {
+            log('Simulating exact frontend form submission...');
+            updateStatus('Simulating frontend form submission...', 'info');
+            
+            // Get token from localStorage (simulating frontend behavior)
+            const storedToken = '6f84f861a8384eebd0bb7ba5f1af50f9'; // The exact token from your logs
+            
+            // Build book object exactly as frontend does
+            const book = {
+                "ISBN": document.getElementById('sim-isbn').value.trim(),
+                "title": document.getElementById('sim-title').value.trim(),
+                "author": document.getElementById('sim-author').value.trim(),
+                "year": parseInt(document.getElementById('sim-year').value, 10),
+                "publisher": document.getElementById('sim-publisher').value.trim(),
+                "cover": document.getElementById('sim-cover').value.trim()
+            };
+            
+            log(`[DEBUG] Submitting book to /add-book: ${JSON.stringify(book)}`);
+            log(`[DEBUG] Outgoing Authorization header: Bearer ${storedToken}`);
+            
+            try {
+                const response = await fetch('http://localhost:8000/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${storedToken}`
+                    },
+                    body: JSON.stringify(book)
+                });
+                
+                log(`[DEBUG] Response status: ${response.status}`);
+                
+                if (response.ok) {
+                    const responseData = await response.text();
+                    log(`[DEBUG] Success! Response: ${responseData}`);
+                    showResult('frontend-sim-result', `Frontend simulation successful! Book added.`, true);
+                    updateStatus('Frontend simulation passed', 'pass');
+                } else {
+                    const errorData = await response.text();
+                    log(`[DEBUG] Error response: ${errorData}`);
+                    
+                    if (response.status === 401) {
+                        log('[DEBUG] Session expired. Redirecting to login.');
+                        showResult('frontend-sim-result', `Frontend simulation reproduced the 401 error! This matches your logs exactly.`, false);
+                        updateStatus('Frontend simulation reproduced 401 error', 'fail');
+                    } else {
+                        showResult('frontend-sim-result', `Frontend simulation failed: ${response.status} - ${errorData}`, false);
+                        updateStatus(`Frontend simulation failed (${response.status})`, 'fail');
+                    }
+                }
+            } catch (error) {
+                log(`[DEBUG] Network error: ${error.message}`);
+                showResult('frontend-sim-result', `Frontend simulation error: ${error.message}`, false);
+                updateStatus('Frontend simulation error', 'fail');
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            log('Real backend form submission test loaded');
+            updateStatus('Ready to test backend connectivity', 'info');
+        });
+    </script>
+</body>
+</html>
