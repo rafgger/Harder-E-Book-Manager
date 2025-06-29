@@ -8,6 +8,7 @@ const loginContainer = document.getElementById("login-container");
 const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const appContainer = document.getElementById("app");
+const importBtn = document.getElementById("import-btn");
 let sessionToken = null;
 
 function showOverview() {
@@ -99,24 +100,50 @@ function showApp() {
 
 function logout() {
     sessionToken = null;
+    localStorage.removeItem("sessionToken"); // Remove token from localStorage
     showLogin();
     if (loginForm) loginForm.reset();
     if (loginError) loginError.textContent = "";
 }
 
+// Check for an existing session token on page load
+window.addEventListener("load", () => {
+    const savedToken = localStorage.getItem("sessionToken");
+    if (savedToken) {
+        console.log("Found saved session token:", savedToken); // Debugging log
+        sessionToken = savedToken;
+        showApp();
+        fetchBooks();
+        showOverview();
+    } else {
+        console.log("No saved session token found"); // Debugging log
+        showLogin();
+    }
+});
+
 async function login(password) {
     try {
+        console.log("Attempting login with password:", password); // Debugging log
         const res = await fetch("http://localhost:8000/login", {
             method: "POST",
             headers: { "Authorization": "Basic " + btoa(":" + password) },
         });
-        if (!res.ok) throw new Error("Invalid password");
+        console.log("Login response status:", res.status); // Debugging log
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Login error response:", errorText); // Debugging log
+            throw new Error("Invalid password: " + errorText);
+        }
         const data = await res.json();
+        console.log("Login response data:", data); // Debugging log
         sessionToken = data.token;
+        localStorage.setItem("sessionToken", sessionToken); // Save token to localStorage
+        console.log("Session token set and saved:", sessionToken); // Debugging log
         showApp();
         fetchBooks();
         showOverview();
     } catch (e) {
+        console.error("Error during login:", e); // Debugging log
         if (loginError) loginError.textContent = "Login failed: " + e.message;
     }
 }
@@ -146,6 +173,31 @@ if (loginForm) {
 
 if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
+}
+
+if (importBtn) {
+    importBtn.addEventListener("click", async () => {
+        try {
+            console.log("Import button clicked"); // Debugging log
+            const res = await fetch("http://localhost:8000/import-books", {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + sessionToken },
+            });
+            console.log("Response status:", res.status); // Debugging log
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Error response:", errorText); // Debugging log
+                throw new Error("Failed to import books: " + errorText);
+            }
+            const data = await res.json();
+            console.log("Response data:", data); // Debugging log
+            alert(`${data.imported} books imported successfully!`);
+            fetchBooks(); // Refresh the book list
+        } catch (e) {
+            console.error("Error during import:", e); // Debugging log
+            alert(`Error: ${e.message}`);
+        }
+    });
 }
 
 // Initial load (only if elements exist)

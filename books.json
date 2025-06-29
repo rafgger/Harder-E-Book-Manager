@@ -1,0 +1,26 @@
+[
+  {
+    "ISBN": "0195153448",
+    "title": "Classical Mythology",
+    "author": "Mark P. O. Morford",
+    "year": 2002,
+    "publisher": "Oxford University Press",
+    "cover": "http://images.amazon.com/images/P/0195153448.01.MZZZZZZZ.jpg"
+  },
+  {
+    "ISBN": "0002005018",
+    "title": "Clara Callan",
+    "author": "Richard Bruce Wright",
+    "year": 2001,
+    "publisher": "HarperFlamingo Canada",
+    "cover": "http://images.amazon.com/images/P/0002005018.01.MZZZZZZZ.jpg"
+  },
+  {
+    "ISBN": "0060973129",
+    "title": "Decision in Normandy",
+    "author": "Carlo D'Este",
+    "year": 1991,
+    "publisher": "HarperPerennial",
+    "cover": "http://images.amazon.com/images/P/0060973129.01.MZZZZZZZ.jpg"
+  }
+]
