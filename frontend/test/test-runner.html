@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Tests</title>
+    <link rel="stylesheet" href="https://unpkg.com/mocha/mocha.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #mocha { margin-top: 20px; }
+        .info { background: #e7f3ff; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>E-Book Manager Frontend Tests</h1>
+    <div class="info">
+        <strong>Test Environment:</strong> These tests verify the frontend functionality including:
+        <ul>
+            <li>Book rendering and display</li>
+            <li>Login/logout flow</li>
+            <li>Session token management</li>
+            <li>Form input validation</li>
+        </ul>
+    </div>
+    
+    <div id="mocha"></div>
+    
+    <!-- Load testing libraries -->
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+    <script src="https://unpkg.com/chai/chai.js"></script>
+    
+    <!-- Configure Mocha -->
+    <script>
+        mocha.setup('bdd');
+        // Set timeout for async tests
+        mocha.timeout(5000);
+    </script>
+    
+    <!-- Load the application code -->
+    <script src="../app.js"></script>
+    
+    <!-- Load the tests -->
+    <script src="app.test.js"></script>
+    
+    <!-- Run the tests -->
+    <script>
+        mocha.run();
+    </script>
+</body>
+</html>
