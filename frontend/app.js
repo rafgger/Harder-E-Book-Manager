@@ -14,7 +14,6 @@ const addFormContainer = document.getElementById("add-form-container");
 const addForm = document.getElementById("add-form");
 const cancelAdd = document.getElementById("cancel-add");
 const addError = document.getElementById("add-error");
-let sessionToken = null;
 
 function showOverview() {
     if (bookList) bookList.classList.remove("hidden");
@@ -52,15 +51,24 @@ function renderBookDetail(book) {
     `;
 }
 
+function getSessionToken() {
+    // Always get the latest token from localStorage
+    const token = localStorage.getItem("sessionToken");
+    if (!token || token === "null" || token.length < 10) return null;
+    return token;
+}
+
 async function fetchBooks() {
-    const headers = sessionToken ? { "Authorization": "Bearer " + sessionToken } : {};
+    const token = getSessionToken();
+    const headers = token ? { "Authorization": "Bearer " + token } : {};
     const res = await fetch(API_URL, { headers });
     const books = await res.json();
     renderBooks(books);
 }
 
 async function fetchBookDetail(isbn) {
-    const headers = sessionToken ? { "Authorization": "Bearer " + sessionToken } : {};
+    const token = getSessionToken();
+    const headers = token ? { "Authorization": "Bearer " + token } : {};
     const res = await fetch(`${API_URL}/${isbn}`, { headers });
     const book = await res.json();
     renderBookDetail(book);
@@ -104,7 +112,6 @@ function showApp() {
 }
 
 function logout() {
-    sessionToken = null;
     localStorage.removeItem("sessionToken"); // Remove token from localStorage
     showLogin();
     if (loginForm) loginForm.reset();
@@ -116,7 +123,6 @@ window.addEventListener("load", () => {
     const savedToken = localStorage.getItem("sessionToken");
     if (savedToken) {
         console.log("Found saved session token:", savedToken); // Debugging log
-        sessionToken = savedToken;
         showApp();
         fetchBooks();
         showOverview();
@@ -141,9 +147,8 @@ async function login(password) {
         }
         const data = await res.json();
         console.log("Login response data:", data); // Debugging log
-        sessionToken = data.token;
-        localStorage.setItem("sessionToken", sessionToken); // Save token to localStorage
-        console.log("Session token set and saved:", sessionToken); // Debugging log
+        localStorage.setItem("sessionToken", data.token); // Save token to localStorage
+        console.log("Session token set and saved:", data.token); // Debugging log
         showApp();
         fetchBooks();
         showOverview();
@@ -184,9 +189,10 @@ if (importBtn) {
     importBtn.addEventListener("click", async () => {
         try {
             console.log("Import button clicked"); // Debugging log
+            const token = getSessionToken();
             const res = await fetch("http://localhost:8000/import-books", {
                 method: "POST",
-                headers: { "Authorization": "Bearer " + sessionToken },
+                headers: { "Authorization": "Bearer " + token },
             });
             console.log("Response status:", res.status); // Debugging log
             if (!res.ok) {
@@ -210,7 +216,13 @@ if (addBtn && addFormContainer) {
         addFormContainer.classList.remove("hidden");
         appContainer.classList.add("hidden");
         if (addError) addError.textContent = "";
-        addForm.reset();
+        // Prefill the form with default values
+        document.getElementById("add-isbn").value = "123";
+        document.getElementById("add-title").value = "Default Title";
+        document.getElementById("add-author").value = "Default Author";
+        document.getElementById("add-year").value = "2025";
+        document.getElementById("add-publisher").value = "Default Publisher";
+        document.getElementById("add-cover").value = "http://example.com/default-cover.jpg";
     });
 }
 if (cancelAdd && addFormContainer && appContainer) {
@@ -224,31 +236,51 @@ if (addForm) {
     addForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const book = {
-            ISBN: document.getElementById("add-isbn").value.trim(),
-            title: document.getElementById("add-title").value.trim(),
-            author: document.getElementById("add-author").value.trim(),
-            year: parseInt(document.getElementById("add-year").value, 10),
-            publisher: document.getElementById("add-publisher").value.trim(),
-            cover: document.getElementById("add-cover").value.trim()
+            "ISBN": document.getElementById("add-isbn").value.trim(),
+            "title": document.getElementById("add-title").value.trim(),
+            "author": document.getElementById("add-author").value.trim(),
+            "year": parseInt(document.getElementById("add-year").value, 10),
+            "publisher": document.getElementById("add-publisher").value.trim(),
+            "cover": document.getElementById("add-cover").value.trim()
         };
+        const token = getSessionToken();
+        if (!token) {
+            console.error("[DEBUG] No session token found. Redirecting to login."); // Debug log
+            if (addError) addError.textContent = "You are not logged in. Please log in again.";
+            showLogin();
+            return;
+        }
+        console.log("[DEBUG] Submitting book to /add-book:", book); // Debug log
+        console.log("[DEBUG] Outgoing Authorization header:", "Bearer " + token); // Debug log
         try {
             const res = await fetch("http://localhost:8000/add-book", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + sessionToken
+                    "Authorization": "Bearer " + token
                 },
                 body: JSON.stringify(book)
             });
+            console.log("[DEBUG] Response status:", res.status); // Debug log
+            if (res.status === 401) {
+                console.error("[DEBUG] Session expired. Redirecting to login."); // Debug log
+                localStorage.removeItem("sessionToken");
+                if (addError) addError.textContent = "Session expired. Please log in again.";
+                showLogin();
+                return;
+            }
             if (!res.ok) {
                 const errorText = await res.text();
+                console.error("[DEBUG] Error response from /add-book:", errorText); // Debug log
                 if (addError) addError.textContent = errorText;
                 return;
             }
+            console.log("[DEBUG] Book added successfully."); // Debug log
             addFormContainer.classList.add("hidden");
             appContainer.classList.remove("hidden");
             fetchBooks();
         } catch (err) {
+            console.error("[DEBUG] Exception during /add-book request:", err); // Debug log
             if (addError) addError.textContent = err.message;
         }
     });
