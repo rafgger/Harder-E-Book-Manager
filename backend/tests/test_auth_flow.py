@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+"""
+AUTHENTICATION FLOW TEST - E-Book Manager Backend
+
+Tests the complete authentication workflow:
+- HTTP Basic Auth login (username: "user", password from config)
+- Bearer token generation and validation
+- Protected endpoint access with token
+- Token-based book addition
+- Session management and persistence
+
+This test verifies the security layer is working correctly.
+Usage: python test_auth_flow.py
+"""
 import requests
 import json
 

@@ -119,72 +119,72 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 
 ### Backend Test Suite (Located in `backend/tests/`)
 
-#### Core Testing Scripts
-##### `tests/test_auth_flow.py`
-- **Purpose:** Tests the complete authentication and book addition workflow
+#### Essential Tests ⭐
+##### `tests/comprehensive_test.py`
+- **Purpose:** Main integration test covering all system functionality
 - **Functionality:**
-  - Validates HTTP Basic Auth login process
-  - Tests Bearer token authentication for protected endpoints
-  - Verifies book addition with proper authorization
-  - Confirms database persistence of added books
+  - Complete end-to-end testing (server, auth, database)
+  - Book addition with all fields (genre, price, rating)
+  - Book retrieval and validation
+  - Error handling and edge cases
+- **Usage:** `python tests/comprehensive_test.py`
+
+##### `tests/test_new_fields.py`
+- **Purpose:** Tests enhanced book model with new fields
+- **Functionality:**
+  - Genre/Gender field mapping (API "genre" ↔ DB "gender")
+  - Price and rating field handling (string ↔ numeric conversion)
+  - New fields validation and type conversion
+- **Usage:** `python tests/test_new_fields.py`
+
+##### `tests/test_auth_flow.py`
+- **Purpose:** Authentication workflow testing
+- **Functionality:**
+  - HTTP Basic Auth login process
+  - Bearer token generation and validation
+  - Protected endpoint access with tokens
+  - Session management and persistence
 - **Usage:** `python tests/test_auth_flow.py`
 
-##### `tests/end_to_end_test.py`
-- **Purpose:** Comprehensive API testing suite
+#### Database Tests
+##### `tests/check_database.py`
+- **Purpose:** Database health check and structure verification
 - **Functionality:**
-  - Tests server connectivity and availability
-  - Validates login endpoint with various scenarios
-  - Tests book addition with different data formats
-  - Verifies book retrieval functionality
-  - Tests error handling and validation
-- **Usage:** `python tests/end_to_end_test.py`
+  - PostgreSQL connection and authentication
+  - Books table existence and schema validation
+  - Column types and constraints verification
+  - Sample data operations
+- **Usage:** `python tests/check_database.py`
 
-##### `tests/complete_test.py`
-- **Purpose:** Full flow testing using Python's urllib (no external dependencies)
+##### `tests/test_database.py`
+- **Purpose:** Database CRUD operations testing
 - **Functionality:**
-  - Tests login flow identical to frontend implementation
-  - Validates book addition with pure Python HTTP requests
-  - Demonstrates backend compatibility with different HTTP libraries
-- **Usage:** `python tests/complete_test.py`
+  - Book creation, reading, updating, deletion
+  - Database integrity verification
+- **Usage:** `python tests/test_database.py`
 
-#### Authentication & Token Testing
-##### `tests/token_test.py`
-- **Purpose:** Specific token validation testing
+#### Diagnostic Tests
+##### `tests/diagnose_500_error.py`
+- **Purpose:** Troubleshoot 500 Internal Server Errors
 - **Functionality:**
-  - Tests problematic tokens from frontend logs
-  - Compares fresh vs. expired token behavior
-  - Diagnoses authentication issues
-- **Usage:** `python tests/token_test.py`
+  - Database connection issue diagnosis
+  - SQL execution problem identification
+  - Data type conversion error detection
+  - Field mapping problem diagnosis
+- **Usage:** `python tests/diagnose_500_error.py`
 
-##### `tests/test_auth_fix.py`
-- **Purpose:** Validates authentication system fixes
+#### Utility Scripts
+##### `tests/clean_sessions.py`
+- **Purpose:** Session management and cleanup
 - **Functionality:**
-  - Tests Bearer token authentication after system updates
-  - Verifies proper handling of authorization headers
-  - Confirms book addition with authenticated requests
-- **Usage:** `python tests/test_auth_fix.py`
+  - Session file cleanup and validation
+  - Token testing and verification
+- **Usage:** `python tests/clean_sessions.py`
 
-#### Specialized Testing Scripts
-##### `tests/test_add_book.py`
-- **Purpose:** Focused book addition testing
-- **Functionality:**
-  - Tests manual book addition workflow
-  - Validates book data persistence
-  - Tests authorization headers formatting
-- **Usage:** `python tests/test_add_book.py` (update password variable first)
-
-##### `tests/simple_test.py`
-- **Purpose:** Basic connectivity and functionality testing
-- **Functionality:**
-  - Tests server connection and availability
-  - Basic login functionality testing
-  - Simple book addition testing
-- **Usage:** `python tests/simple_test.py`
-
-##### `tests/quick_test.py`, `tests/manual_test.py`
-- **Purpose:** Quick debugging and manual testing utilities
-- **Functionality:** Minimal test scripts for rapid debugging
-- **Usage:** `python tests/[script_name].py`
+##### `tests/read_sessions.py`
+- **Purpose:** Session inspection and debugging
+- **Functionality:** View current session state
+- **Usage:** `python tests/read_sessions.py`
 
 ### Frontend Test Suite
 
@@ -266,21 +266,25 @@ cd backend
 # Use the test runner (recommended)
 python run_tests.py all                    # Run all key tests
 python run_tests.py list                   # List available tests  
-python run_tests.py test_new_fields        # Run specific test
+python run_tests.py comprehensive_test     # Main integration test
+python run_tests.py test_new_fields        # New fields test
+python run_tests.py test_auth_flow         # Authentication test
 
 # Or run tests directly from tests/ directory
-python tests/test_auth_flow.py             # Core authentication test
-python tests/end_to_end_test.py            # Comprehensive API test
-python tests/complete_test.py              # Complete flow test
+python tests/comprehensive_test.py         # Complete system test
+python tests/test_new_fields.py            # New fields testing
+python tests/test_auth_flow.py             # Authentication testing
 
-# Run specialized tests
-python tests/test_auth_fix.py              # Authentication fixes
-python tests/token_test.py                 # Token validation
-python tests/test_add_book.py              # Book addition test
+# Database tests
+python tests/check_database.py            # Database health check
+python tests/test_database.py             # Database operations
 
-# Quick connectivity tests  
-python tests/simple_test.py               # Basic connectivity
-python tests/diagnose_500_error.py        # Database diagnostics
+# Diagnostic tests  
+python tests/diagnose_500_error.py        # Server error diagnosis
+
+# Utility scripts
+python tests/clean_sessions.py            # Session cleanup
+python tests/read_sessions.py             # Session inspection
 ```
 
 #### Frontend Test Execution
@@ -317,12 +321,12 @@ python run_tests.py all                     # Run all key tests with test runner
 python run_tests.py list                    # List all available tests
 python run_tests.py comprehensive_test      # Run comprehensive functionality test
 
-# OR run individual tests:
-python tests/test_auth_flow.py && python tests/end_to_end_test.py && python tests/complete_test.py
+# OR run individual essential tests:
+python tests/comprehensive_test.py && python tests/test_new_fields.py && python tests/test_auth_flow.py
 
 # For debugging server issues:
 python tests/diagnose_500_error.py          # Database diagnostics
-python tests/isolated_add_test.py          # Isolated add-book testing
+python tests/check_database.py             # Database health check
 
 # Browser: Open frontend test files
 # 1. frontend/test/form-tests.html
@@ -354,7 +358,6 @@ python tests/isolated_add_test.py          # Isolated add-book testing
 - **Cleanup:** Test books persist in database - manually remove if needed
 - **Sessions:** Backend maintains session tokens in `sessions.pkl` file
 
-## Project Structure
 ## Project Structure
 ```
 backend/                    # FastAPI backend

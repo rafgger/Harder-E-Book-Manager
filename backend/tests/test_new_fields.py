@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 """
-Test script for the updated e-book manager with new fields
-Tests the complete flow including genre, price, and rating
+NEW FIELDS TEST - E-Book Manager Backend
+
+Specifically tests the new fields functionality:
+- Genre/Gender field mapping (API uses "genre", DB uses "gender")  
+- Price field handling (string to numeric conversion)
+- Rating field handling (string to numeric conversion)
+- Book addition with all new fields
+- Data validation and type conversion
+
+This test focuses on the enhanced book model with genre, price, and rating.
+Usage: python test_new_fields.py
 """
 import requests
 import json

@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
-Diagnose the 500 Internal Server Error
+DIAGNOSTIC TEST - 500 Error Troubleshooting
+
+Diagnoses and troubleshoots 500 Internal Server Errors:
+- Database connection issues
+- SQL execution problems  
+- Data type conversion errors
+- Field mapping problems (genre/gender)
+- Session and authentication issues
+
+This test helps identify the root cause of server errors.
+Usage: python diagnose_500_error.py
 """
 import asyncio
 import sys

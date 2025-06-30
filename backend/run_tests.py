@@ -66,7 +66,7 @@ def main():
         # Run the most important tests
         key_tests = [
             "test_new_fields",
-            "complete_test", 
+            "comprehensive_test", 
             "test_auth_flow",
             "test_database",
             "diagnose_500_error"
