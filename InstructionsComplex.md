@@ -9,7 +9,7 @@ Adjust the already present responsive web application to have the following feat
 - Import button – Triggers the import of books into the database from a `books.json` file  
   (the file will contain structured JSON data of several books and will be statically placed in the app directory)
 
-### Technical Requirements:
+### Technical Requirements:a
 
 Backend:
 
