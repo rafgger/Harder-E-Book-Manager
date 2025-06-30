@@ -46,7 +46,7 @@ async def check_database():
             
             # Check if we have the new columns
             column_names = [col['column_name'] for col in columns]
-            required_columns = ['isbn', 'title', 'author', 'year', 'publisher', 'img_m', 'gender', 'price', 'rating']
+            required_columns = ['isbn', 'title', 'author', 'year', 'publisher', 'img_m', 'genre', 'price', 'rating']
             missing_columns = [col for col in required_columns if col not in column_names]
             
             if missing_columns:
@@ -56,7 +56,7 @@ async def check_database():
                 # Add missing columns
                 for col in missing_columns:
                     try:
-                        if col in ['gender', 'price', 'rating']:
+                        if col in ['genre', 'price', 'rating']:
                             await conn.execute(f"ALTER TABLE books ADD COLUMN {col} VARCHAR")
                             print(f"✅ Added column: {col}")
                     except Exception as e:
@@ -88,7 +88,7 @@ async def check_database():
                     year INTEGER,
                     publisher VARCHAR,
                     img_m VARCHAR,
-                    gender VARCHAR,
+                    genre VARCHAR,
                     price VARCHAR,
                     rating VARCHAR
                 )

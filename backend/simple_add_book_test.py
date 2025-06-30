@@ -31,7 +31,7 @@ def test_add_book():
             "year": 2025,
             "publisher": "Simple Publisher",
             "cover": "http://example.com/simple.jpg",
-            "gender": "Non-Fiction",
+            "genre": "Non-Fiction",
             "price": "15.99",
             "rating": "3.8"
         }

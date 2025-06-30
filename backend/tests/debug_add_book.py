@@ -46,7 +46,7 @@ def debug_add_book():
         "year": 2025,
         "publisher": "Debug Publisher",
         "cover": "http://example.com/debug.jpg",
-        "gender": "Fiction",
+        "genre": "Fiction",
         "price": "19.99",
         "rating": "4.5"
     }

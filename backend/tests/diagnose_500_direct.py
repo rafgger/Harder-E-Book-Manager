@@ -31,12 +31,12 @@ async def test_book_creation_directly():
             year=2025,
             publisher="Test Publisher",
             cover="http://example.com/cover.jpg",
-            gender="Fiction",
+            genre="Fiction",
             price=19.99,  # Numeric value
             rating=4.5    # Numeric value
         )
         print("✅ Book model creation successful")
-        print(f"   Book attributes: isbn={test_book.isbn}, gender={test_book.gender}, price={test_book.price}, rating={test_book.rating}")
+        print(f"   Book attributes: isbn={test_book.isbn}, genre={test_book.genre}, price={test_book.price}, rating={test_book.rating}")
         
         # Test 3: Test database insertion
         print("\n3. Testing database insertion...")
@@ -59,7 +59,7 @@ async def test_book_creation_directly():
             "year": 2025,
             "publisher": "Test Publisher",
             "cover": "http://example.com/test-cover.jpg",
-            "gender": "Fiction",
+            "genre": "Fiction",
             "price": "19.99",  # String as received from frontend
             "rating": "4.5"    # String as received from frontend
         }
@@ -81,7 +81,7 @@ async def test_book_creation_directly():
             year=frontend_book_data["year"],
             publisher=frontend_book_data["publisher"],
             cover=frontend_book_data["cover"],
-            gender=frontend_book_data["gender"],
+            genre=frontend_book_data["genre"],
             price=price_value,
             rating=rating_value
         )

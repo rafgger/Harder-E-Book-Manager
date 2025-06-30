@@ -47,7 +47,7 @@ def test_server():
         "year": 2025,
         "publisher": "Test Publisher",
         "cover": "http://example.com/cover.jpg",
-        "gender": "Fiction",  # Note: backend expects "gender" not "genre"
+        "genre": "Fiction",  # Note: backend expects "genre" not "genre"
         "price": "19.99",
         "rating": "4.5"
     }

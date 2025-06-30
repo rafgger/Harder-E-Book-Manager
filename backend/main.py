@@ -69,7 +69,7 @@ class Book(Base):
     year = Column("year", Integer)
     publisher = Column("publisher", String)
     cover = Column("img_m", String)
-    gender = Column("gender", String)  # Database column is 'gender', attribute is 'gender'
+    genre = Column("genre", String)  # Database column is 'genre', attribute is 'genre'
     price = Column("price", Numeric(10, 2))  # Numeric type to match database schema
     rating = Column("rating", Numeric(3, 1))  # Numeric type to match database schema
 
@@ -146,7 +146,7 @@ async def get_books(auth: bool = Depends(authenticate)):
                     "year": b.year,
                     "publisher": b.publisher,
                     "cover": b.cover,
-                    "genre": b.gender or "",
+                    "genre": b.genre or "",
                     "price": str(b.price) if b.price is not None else "",
                     "rating": str(b.rating) if b.rating is not None else ""
                 }
@@ -171,7 +171,7 @@ async def get_book(isbn: str, auth: bool = Depends(authenticate)):
                 "year": book.year,
                 "publisher": book.publisher,
                 "cover": book.cover,
-                "genre": book.gender or "",
+                "genre": book.genre or "",
                 "price": str(book.price) if book.price is not None else "",
                 "rating": str(book.rating) if book.rating is not None else ""
             }
@@ -204,7 +204,7 @@ async def test_auth_endpoint(auth: bool = Depends(authenticate)):
 async def add_book(book: dict, auth: bool = Depends(authenticate)):
     try:
         # Validation - updated to include new fields
-        required = ["ISBN", "title", "author", "year", "publisher", "cover", "gender", "price", "rating"]
+        required = ["ISBN", "title", "author", "year", "publisher", "cover", "genre", "price", "rating"]
         for field in required:
             if field not in book:
                 raise HTTPException(status_code=400, detail=f"Missing field: {field}")
@@ -235,7 +235,7 @@ async def add_book(book: dict, auth: bool = Depends(authenticate)):
                 year=book["year"],
                 publisher=book["publisher"],
                 cover=book["cover"],
-                gender=book["gender"],  # Map "gender" field from request to "gender" model attribute
+                genre=book["genre"],  # Map "genre" field from request to "genre" model attribute
                 price=price_value,
                 rating=rating_value
             )
@@ -284,7 +284,7 @@ async def import_books(auth: bool = Depends(authenticate)):
                 year=book["year"],
                 publisher=book["publisher"],
                 cover=book["cover"],
-                gender=book.get("genre", ""),
+                genre=book.get("genre", ""),
                 price=price_value,
                 rating=rating_value
             )

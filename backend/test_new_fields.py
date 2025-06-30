@@ -35,7 +35,7 @@ def test_new_fields():
         "year": 2025,
         "publisher": "Test Publisher",
         "cover": "http://example.com/cover.jpg",
-        "gender": "Fiction",  # Backend expects "gender" field name
+        "genre": "Fiction",  # Backend expects "genre" field name
         "price": "19.99",
         "rating": "4.5"
     }

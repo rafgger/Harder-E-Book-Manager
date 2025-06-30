@@ -397,7 +397,7 @@ README.md                  # This file
 - ✅ **Comprehensive testing** - Frontend and backend test suites
 - ✅ **Session management** - Robust token validation and cleanup
 - ✅ **CORS support** - Cross-origin request handling
-- ✅ **Fixed field consistency** - Updated all tests to use "gender" field consistently
+- ✅ **Fixed field consistency** - Updated all tests to use "genre" field consistently
 - ✅ **Organized test structure** - All backend tests moved to dedicated `tests/` directory
 - ✅ **Added test runner** - Convenient `run_tests.py` script for easy test execution
 - ✅ **Database diagnostics** - Tools to troubleshoot database issues and field mapping
@@ -408,11 +408,11 @@ README.md                  # This file
 - **Import failures:** Check that `books.json` exists and has the correct format
 - **CORS errors:** Serve the frontend from a local server instead of opening directly
 - **500 Internal Server Errors when adding books:** The server may need to be restarted if it becomes unresponsive. Stop the server (Ctrl+C) and restart with `uvicorn main:app --reload`
-- **Field mapping issues:** The database has both 'gender' and 'genre' columns - the Book model uses 'gender' column for data storage
+- **Field mapping issues:** The database has both 'genre' and 'genre' columns - the Book model uses 'genre' column for data storage
 - **Test book duplicates:** Test books persist in the database. Use unique ISBNs or manually clean test data if needed
 
 ## License
 MIT
 
 Used adjusted data set:
-J. Schler, M. Koppel, S. Argamon and J. Pennebaker (2006). Effects of Age and Gender on Blogging in Proceedings of 2006 AAAI Spring Symposium on Computational Approaches for Analyzing Weblogs. URL: http://www.cs.biu.ac.il/~schlerj/schler_springsymp06.pdf
+J. Schler, M. Koppel, S. Argamon and J. Pennebaker (2006). Effects of Age and Genre on Blogging in Proceedings of 2006 AAAI Spring Symposium on Computational Approaches for Analyzing Weblogs. URL: http://www.cs.biu.ac.il/~schlerj/schler_springsymp06.pdf
