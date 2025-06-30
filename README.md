@@ -1,6 +1,6 @@
 # E-Book Manager
 
-A minimalist web application for managing e-books with a FastAPI backend and a modern, responsive frontend featuring session-based authentication and real-time notifications.
+A minimalist web application for managing e-books with a FastAPI backend and a modern, responsive frontend featuring session-based authentication and real-time notifications. This is a more difficult version of [Easier-E-Book-Manager](https://github.com/rafgger/Easier-E-Book-Manager).
 
 ## Features
 - **Session-based authentication** with Bearer token support
