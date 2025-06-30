@@ -33,7 +33,7 @@ async def diagnose_database():
                 year=2025,
                 publisher="Test Publisher",
                 cover="http://example.com/cover.jpg",
-                gender="Fiction",  # This maps to 'gender' column in DB
+                genre="Fiction",  # This maps to 'genre' column in DB
                 price="19.99",
                 rating="4.5"
             )
@@ -60,7 +60,7 @@ async def diagnose_database():
                 print("✅ Book retrieval successful!")
                 print(f"   ISBN: {retrieved_book.isbn}")
                 print(f"   Title: {retrieved_book.title}")
-                print(f"   Genre: {retrieved_book.gender}")
+                print(f"   Genre: {retrieved_book.genre}")
                 print(f"   Price: {retrieved_book.price}")
                 print(f"   Rating: {retrieved_book.rating}")
             else:

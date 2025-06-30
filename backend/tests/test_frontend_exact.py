@@ -39,7 +39,7 @@ def test_frontend_exact():
             "year": 2025,
             "publisher": "Frontend Publisher", 
             "cover": "http://example.com/cover.jpg",
-            "gender": "Fiction",  # Frontend sends "gender" to match backend expectation
+            "genre": "Fiction",  # Frontend sends "genre" to match backend expectation
             "price": "29.99",
             "rating": "4.2"
         }

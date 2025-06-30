@@ -33,7 +33,7 @@ async def diagnose_database():
                 year=2025,
                 publisher="Test Publisher",
                 cover="http://example.com/cover.jpg",
-                genre="Fiction",  # This maps to 'gender' column in DB
+                genre="Fiction",  # This maps to 'genre' column in DB
                 price="19.99",
                 rating="4.5"
             )

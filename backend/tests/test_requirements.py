@@ -64,7 +64,7 @@ def test_add_book_requirements():
         "year": 2025,
         "publisher": "Test Publisher", 
         "cover": "http://example.com/cover.jpg",
-        "gender": "Fiction",
+        "genre": "Fiction",
         "price": "19.99",
         "rating": "4.5"
     }

@@ -65,7 +65,7 @@ def test_complete_flow():
         "year": 2025,
         "publisher": "Test Publisher",
         "cover": "http://example.com/test-cover.jpg",
-        "gender": "Fiction",  # Note: backend expects "gender" field name
+        "genre": "Fiction",  # Note: backend expects "genre" field name
         "price": "19.99",
         "rating": "4.5"
     }

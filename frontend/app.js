@@ -282,7 +282,7 @@ if (addForm) {
             "year": parseInt(document.getElementById("add-year").value, 10),
             "publisher": document.getElementById("add-publisher").value.trim(),
             "cover": document.getElementById("add-cover").value.trim(),
-            "gender": document.getElementById("add-genre").value.trim(),  // Backend expects "gender" field
+            "genre": document.getElementById("add-genre").value.trim(),  // Backend expects "genre" field
             "price": document.getElementById("add-price").value.trim(),
             "rating": document.getElementById("add-rating").value.trim()
         };

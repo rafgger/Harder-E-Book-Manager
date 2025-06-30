@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script for the updated e-book manager with new fields
-Tests the complete flow including gender, price, and rating
+Tests the complete flow including genre, price, and rating
 """
 import requests
 import json
@@ -35,7 +35,7 @@ def test_new_fields():
         "year": 2025,
         "publisher": "Test Publisher",
         "cover": "http://example.com/cover.jpg",
-        "gender": "Fiction",  # Backend expects "gender" field name
+        "genre": "Fiction",  # Backend expects "genre" field name
         "price": "19.99",
         "rating": "4.5"
     }
@@ -68,12 +68,12 @@ def test_new_fields():
             if test_book:
                 print("✓ Book retrieved successfully")
                 print(f"  Title: {test_book.get('title')}")
-                print(f"  Gender: {test_book.get('gender', 'Missing')}")
+                print(f"  Genre: {test_book.get('genre', 'Missing')}")
                 print(f"  Price: {test_book.get('price', 'Missing')}")
                 print(f"  Rating: {test_book.get('rating', 'Missing')}")
                 
                 # Verify all new fields are present
-                if (test_book.get('gender') and 
+                if (test_book.get('genre') and 
                     test_book.get('price') and 
                     test_book.get('rating')):
                     print("✓ All new fields present and correct")
@@ -92,7 +92,7 @@ def test_new_fields():
     
     print("\n=== All tests passed! ===")
     print("The e-book manager successfully supports:")
-    print("- Gender classification")
+    print("- Genre classification")
     print("- Price information")
     print("- Rating system")
     return True

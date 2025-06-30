@@ -34,7 +34,7 @@ def test_backend():
                 "year": 2025,
                 "publisher": "Test Publisher",
                 "cover": "http://example.com/test-cover.jpg",
-                "gender": "Fiction",  # Required field
+                "genre": "Fiction",  # Required field
                 "price": "19.99",     # Required field
                 "rating": "4.5"       # Required field
             }
@@ -56,7 +56,7 @@ def test_backend():
                 "year": 2025,
                 "publisher": "Frontend Publisher",
                 "cover": "http://example.com/frontend-cover.jpg",
-                "gender": "Non-Fiction",  # Required field
+                "genre": "Non-Fiction",  # Required field
                 "price": "24.99",         # Required field
                 "rating": "4.0"           # Required field
             }

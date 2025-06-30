@@ -9,7 +9,7 @@ import time
 
 def comprehensive_test():
     print("=== Comprehensive E-Book Manager Test ===")
-    print("Testing: Enhanced features with Gender, Price, and Rating")
+    print("Testing: Enhanced features with Genre, Price, and Rating")
     
     base_url = "http://localhost:8000"
     password = "123"
@@ -52,7 +52,7 @@ def comprehensive_test():
             "year": 2025,
             "publisher": "Test Fiction Press",
             "cover": "http://example.com/fiction.jpg",
-            "gender": "Fiction",
+            "genre": "Fiction",
             "price": "24.99",
             "rating": "4.5"
         },
@@ -63,7 +63,7 @@ def comprehensive_test():
             "year": 2025,
             "publisher": "Science Publishing",
             "cover": "http://example.com/science.jpg",
-            "gender": "Science",
+            "genre": "Science",
             "price": "89.99",
             "rating": "4.8"
         },
@@ -74,7 +74,7 @@ def comprehensive_test():
             "year": 2025,
             "publisher": "Academic Press",
             "cover": "http://example.com/history.jpg",
-            "gender": "History",
+            "genre": "History",
             "price": "45.50",
             "rating": "4.2"
         }
@@ -89,7 +89,7 @@ def comprehensive_test():
             print(f"   Response text: {response.text}")
             
             if response.status_code == 200:
-                print(f"✓ Added: {book['title']} (Gender: {book['gender']}, Price: ${book['price']}, Rating: {book['rating']})")
+                print(f"✓ Added: {book['title']} (Genre: {book['genre']}, Price: ${book['price']}, Rating: {book['rating']})")
                 added_books += 1
             else:
                 print(f"✗ Failed to add {book['title']}: {response.text}")
@@ -115,11 +115,11 @@ def comprehensive_test():
                 isbn = book.get("ISBN", "")
                 if isbn.startswith("test-") and str(timestamp) in isbn:
                     test_books_found += 1
-                    has_new_fields = all(field in book for field in ['gender', 'price', 'rating'])
+                    has_new_fields = all(field in book for field in ['genre', 'price', 'rating'])
                     if has_new_fields:
-                        print(f"✓ {book['title']}: Gender={book.get('gender')}, Price=${book.get('price')}, Rating={book.get('rating')}")
+                        print(f"✓ {book['title']}: Genre={book.get('genre')}, Price=${book.get('price')}, Rating={book.get('rating')}")
                     else:
-                        missing_fields = [field for field in ['gender', 'price', 'rating'] if field not in book]
+                        missing_fields = [field for field in ['genre', 'price', 'rating'] if field not in book]
                         print(f"✗ {book['title']}: Missing fields: {missing_fields}")
             
             print(f"Found {test_books_found} test books with new fields from this test run")
@@ -152,7 +152,7 @@ def comprehensive_test():
         "year": 2025,
         "publisher": "Test Publisher",
         "cover": "http://example.com/test.jpg",
-        "gender": "Fiction",
+        "genre": "Fiction",
         "price": "19.99",
         "rating": "4.0"
     }
@@ -185,7 +185,7 @@ def comprehensive_test():
     print("\n=== Test Summary ===")
     print("✓ Server connectivity")
     print("✓ Authentication system")
-    print("✓ Enhanced book addition (Gender, Price, Rating)")
+    print("✓ Enhanced book addition (Genre, Price, Rating)")
     print("✓ Database persistence of new fields")
     print("✓ Book retrieval with new fields")
     print("✓ Error handling and validation")

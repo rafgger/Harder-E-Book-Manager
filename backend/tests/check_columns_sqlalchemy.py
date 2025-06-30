@@ -11,7 +11,7 @@ from main import SessionLocal, Book
 from sqlalchemy.future import select
 
 async def check_columns():
-    print("=== Checking Gender vs Genre Columns ===")
+    print("=== Checking Genre vs Genre Columns ===")
     
     try:
         async with SessionLocal() as session:
@@ -21,19 +21,19 @@ async def check_columns():
             
             print("Sample books from current Book model:")
             for book in books:
-                print(f"   {book.isbn}: gender='{book.gender}', title='{book.title}'")
+                print(f"   {book.isbn}: genre='{book.genre}', title='{book.title}'")
             
-            # Count books with gender data
-            result = await session.execute(select(Book).where(Book.gender.is_not(None)))
+            # Count books with genre data
+            result = await session.execute(select(Book).where(Book.genre.is_not(None)))
             books_with_gender = result.scalars().all()
             gender_count = len(books_with_gender)
             
-            print(f"\nBooks with 'gender' data: {gender_count}")
+            print(f"\nBooks with 'genre' data: {gender_count}")
             
             if gender_count > 0:
-                print("✓ The Book model is correctly using the 'gender' column")
+                print("✓ The Book model is correctly using the 'genre' column")
             else:
-                print("⚠️  No books have 'gender' data - this might be the issue")
+                print("⚠️  No books have 'genre' data - this might be the issue")
         
     except Exception as e:
         print(f"❌ Error checking columns: {e}")
