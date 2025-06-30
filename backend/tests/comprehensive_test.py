@@ -1,7 +1,17 @@
 #!/usr/bin/env python3
 """
-Comprehensive test for the updated E-Book Manager
-Tests all functionality including new fields and database operations
+COMPREHENSIVE TEST - E-Book Manager Backend
+
+This is the main integration test that covers all major functionality:
+- Server connectivity and availability  
+- User authentication (login/logout)
+- Book addition with all fields (including genre, price, rating)
+- Book retrieval and validation
+- Database persistence verification
+- Error handling and edge cases
+
+Run this test to verify the entire system is working correctly.
+Usage: python comprehensive_test.py
 """
 import requests
 import json

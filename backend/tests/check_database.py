@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
-Database structure test and verification script
+DATABASE STRUCTURE TEST - E-Book Manager Backend
+
+Verifies database connectivity and structure:
+- PostgreSQL connection and authentication
+- Books table existence and schema validation
+- Column types and constraints verification
+- Sample data insertion and retrieval
+- Database health check
+
+This test ensures the database layer is properly configured.
+Usage: python check_database.py
 """
 import asyncio
 import asyncpg
