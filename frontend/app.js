@@ -41,6 +41,7 @@ const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const appContainer = document.getElementById("app");
 const importBtn = document.getElementById("import-btn");
+const printBtn = document.getElementById("print-btn");
 const addBtn = document.getElementById("add-btn");
 const addFormContainer = document.getElementById("add-form-container");
 const addForm = document.getElementById("add-form");
@@ -248,6 +249,12 @@ if (importBtn) {
             console.error("Error during import:", e); // Debugging log
             showSnackbar(`Error: ${e.message}`, 'error');
         }
+    });
+}
+
+if (printBtn) {
+    printBtn.addEventListener("click", () => {
+        window.print();
     });
 }
 
