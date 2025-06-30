@@ -3,9 +3,9 @@
 
 from fastapi import FastAPI, HTTPException, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import Column, String, Integer
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, Integer, Numeric
 from sqlalchemy.future import select
 import os
 import json
@@ -54,8 +54,8 @@ DATABASE_URL = os.getenv(
 )
 
 engine = create_async_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(
-    bind=engine,
+SessionLocal = async_sessionmaker(
+    engine,
     class_=AsyncSession,
     expire_on_commit=False
 )
@@ -69,6 +69,9 @@ class Book(Base):
     year = Column("year", Integer)
     publisher = Column("publisher", String)
     cover = Column("img_m", String)
+    gender = Column("gender", String)  # Database column is 'gender', attribute is 'gender'
+    price = Column("price", Numeric(10, 2))  # Numeric type to match database schema
+    rating = Column("rating", Numeric(3, 1))  # Numeric type to match database schema
 
 app = FastAPI()
 
@@ -80,40 +83,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/books")
-async def get_books():
-    async with SessionLocal() as session:
-        result = await session.execute(select(Book))
-        books = result.scalars().all()
-        return [
-            {
-                "ISBN": b.isbn,
-                "title": b.title,
-                "author": b.author,
-                "year": b.year,
-                "publisher": b.publisher,
-                "cover": b.cover
-            }
-            for b in books
-        ]
-
-@app.get("/books/{isbn}")
-async def get_book(isbn: str):
-    async with SessionLocal() as session:
-        result = await session.execute(select(Book).where(Book.isbn == isbn))
-        book = result.scalar_one_or_none()
-        if not book:
-            raise HTTPException(status_code=404, detail="Book not found")
-        return {
-            "ISBN": book.isbn,
-            "title": book.title,
-            "author": book.author,
-            "year": book.year,
-            "publisher": book.publisher,
-            "cover": book.cover
-        }
-
-# Authentication dependency
+# Authentication dependency - moved before endpoints that use it
 async def authenticate(authorization: str = Header(None)):
     # Always reload sessions from disk to get the latest tokens
     global sessions
@@ -162,6 +132,55 @@ async def authenticate(authorization: str = Header(None)):
     raise HTTPException(status_code=401, detail="Not authenticated")
     return True
 
+@app.get("/books")
+async def get_books(auth: bool = Depends(authenticate)):
+    try:
+        async with SessionLocal() as session:
+            result = await session.execute(select(Book))
+            books = result.scalars().all()
+            return [
+                {
+                    "ISBN": b.isbn,
+                    "title": b.title,
+                    "author": b.author,
+                    "year": b.year,
+                    "publisher": b.publisher,
+                    "cover": b.cover,
+                    "genre": b.gender or "",
+                    "price": str(b.price) if b.price is not None else "",
+                    "rating": str(b.rating) if b.rating is not None else ""
+                }
+                for b in books
+            ]
+    except Exception as e:
+        print(f"[ERROR] Exception in /books: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve books")
+
+@app.get("/books/{isbn}")
+async def get_book(isbn: str, auth: bool = Depends(authenticate)):
+    try:
+        async with SessionLocal() as session:
+            result = await session.execute(select(Book).where(Book.isbn == isbn))
+            book = result.scalar_one_or_none()
+            if not book:
+                raise HTTPException(status_code=404, detail="Book not found")
+            return {
+                "ISBN": book.isbn,
+                "title": book.title,
+                "author": book.author,
+                "year": book.year,
+                "publisher": book.publisher,
+                "cover": book.cover,
+                "genre": book.gender or "",
+                "price": str(book.price) if book.price is not None else "",
+                "rating": str(book.rating) if book.rating is not None else ""
+            }
+    except Exception as e:
+        print(f"[ERROR] Exception in /books/{isbn}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve book")
+
+
+
 @app.post("/login")
 async def login(credentials: HTTPBasicCredentials = Depends(security)):
     global sessions
@@ -184,8 +203,8 @@ async def test_auth_endpoint(auth: bool = Depends(authenticate)):
 @app.post("/add-book")
 async def add_book(book: dict, auth: bool = Depends(authenticate)):
     try:
-        # Validation
-        required = ["ISBN", "title", "author", "year", "publisher", "cover"]
+        # Validation - updated to include new fields
+        required = ["ISBN", "title", "author", "year", "publisher", "cover", "gender", "price", "rating"]
         for field in required:
             if field not in book:
                 raise HTTPException(status_code=400, detail=f"Missing field: {field}")
@@ -201,14 +220,24 @@ async def add_book(book: dict, auth: bool = Depends(authenticate)):
             if existing_book.scalar_one_or_none():
                 raise HTTPException(status_code=400, detail="Book with this ISBN already exists")
             
-            # Create new book
+            # Create new book with all fields
+            # Convert price and rating to numeric values
+            try:
+                price_value = float(book["price"]) if book["price"] else None
+                rating_value = float(book["rating"]) if book["rating"] else None
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Price and rating must be valid numbers")
+            
             new_book = Book(
                 isbn=book["ISBN"],
                 title=book["title"],
                 author=book["author"],
                 year=book["year"],
                 publisher=book["publisher"],
-                cover=book["cover"]
+                cover=book["cover"],
+                gender=book["gender"],  # Map "gender" field from request to "gender" model attribute
+                price=price_value,
+                rating=rating_value
             )
             
             session.add(new_book)
@@ -231,7 +260,7 @@ async def import_books(auth: bool = Depends(authenticate)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read books.json: {e}")
     imported = 0
-    async with AsyncSession(engine) as session:
+    async with SessionLocal() as session:
         for book in books:
             if not all(k in book for k in ["ISBN", "title", "author", "year", "publisher", "cover"]):
                 continue
@@ -240,13 +269,25 @@ async def import_books(auth: bool = Depends(authenticate)):
             existing = result.scalar_one_or_none()
             if existing:
                 continue  # Skip duplicates
-            new_book = Book()
-            new_book.isbn = book["ISBN"]
-            new_book.title = book["title"]
-            new_book.author = book["author"]
-            new_book.year = book["year"]
-            new_book.publisher = book["publisher"]
-            new_book.cover = book["cover"]
+            # Convert price and rating to numeric values for import
+            try:
+                price_value = float(book.get("price", "0")) if book.get("price") else None
+                rating_value = float(book.get("rating", "0")) if book.get("rating") else None
+            except ValueError:
+                # Skip books with invalid price/rating data
+                continue
+                
+            new_book = Book(
+                isbn=book["ISBN"],
+                title=book["title"],
+                author=book["author"],
+                year=book["year"],
+                publisher=book["publisher"],
+                cover=book["cover"],
+                gender=book.get("genre", ""),
+                price=price_value,
+                rating=rating_value
+            )
             session.add(new_book)
             imported += 1
         try:

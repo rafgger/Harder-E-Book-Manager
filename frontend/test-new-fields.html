@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Fields Frontend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        #test-form { max-width: 400px; margin: 20px 0; }
+        #test-form input, #test-form select { display: block; width: 100%; margin: 5px 0; padding: 8px; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>E-Book Manager - New Fields Frontend Test</h1>
+    
+    <div class="info test-result">
+        <strong>Testing:</strong> Updated form with Genre, Price, and Rating fields
+    </div>
+    
+    <div id="test-results"></div>
+    
+    <h2>Test Form</h2>
+    <form id="test-form">
+        <input type="text" id="isbn" placeholder="ISBN" value="test-frontend-123" required>
+        <input type="text" id="title" placeholder="Title" value="Frontend Test Book" required>
+        <input type="text" id="author" placeholder="Author" value="Test Author" required>
+        <input type="number" id="year" placeholder="Year" value="2025" required>
+        <input type="text" id="publisher" placeholder="Publisher" value="Test Publisher" required>
+        <input type="url" id="cover" placeholder="Cover URL" value="http://example.com/test.jpg" required>
+        <select id="genre" required>
+            <option value="">Select Genre</option>
+            <option value="Fiction" selected>Fiction</option>
+            <option value="History">History</option>
+            <option value="Science">Science</option>
+            <option value="Education">Education</option>
+        </select>
+        <input type="number" id="price" placeholder="Price" value="29.99" step="0.01" min="0" required>
+        <input type="number" id="rating" placeholder="Rating (1-5)" value="4.2" step="0.1" min="1" max="5" required>
+        <button type="button" onclick="testFormValidation()">Test Form Validation</button>
+        <button type="button" onclick="testBookObject()">Test Book Object Creation</button>
+    </form>
+    
+    <script>
+        function addTestResult(message, success) {
+            const div = document.createElement('div');
+            div.className = `test-result ${success ? 'pass' : 'fail'}`;
+            div.innerHTML = `${success ? '✓' : '✗'} ${message}`;
+            document.getElementById('test-results').appendChild(div);
+        }
+        
+        function testFormValidation() {
+            addTestResult("Testing form validation...", true);
+            
+            // Test all required fields are present
+            const requiredFields = ['isbn', 'title', 'author', 'year', 'publisher', 'cover', 'genre', 'price', 'rating'];
+            let allFieldsPresent = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element) {
+                    addTestResult(`Missing field: ${field}`, false);
+                    allFieldsPresent = false;
+                } else if (!element.value) {
+                    addTestResult(`Empty field: ${field}`, false);
+                    allFieldsPresent = false;
+                }
+            });
+            
+            if (allFieldsPresent) {
+                addTestResult("All required fields present and filled", true);
+            }
+            
+            // Test genre dropdown
+            const genreSelect = document.getElementById('genre');
+            if (genreSelect.options.length >= 5) {
+                addTestResult("Genre dropdown has sufficient options", true);
+            } else {
+                addTestResult("Genre dropdown needs more options", false);
+            }
+            
+            // Test price validation
+            const priceInput = document.getElementById('price');
+            if (priceInput.type === 'number' && priceInput.step === '0.01') {
+                addTestResult("Price field properly configured for decimals", true);
+            } else {
+                addTestResult("Price field configuration issue", false);
+            }
+            
+            // Test rating validation
+            const ratingInput = document.getElementById('rating');
+            if (ratingInput.type === 'number' && ratingInput.min === '1' && ratingInput.max === '5') {
+                addTestResult("Rating field properly constrained (1-5)", true);
+            } else {
+                addTestResult("Rating field constraints issue", false);
+            }
+        }
+        
+        function testBookObject() {
+            addTestResult("Testing book object creation with new fields...", true);
+            
+            try {
+                const book = {
+                    "ISBN": document.getElementById('isbn').value.trim(),
+                    "title": document.getElementById('title').value.trim(),
+                    "author": document.getElementById('author').value.trim(),
+                    "year": parseInt(document.getElementById('year').value, 10),
+                    "publisher": document.getElementById('publisher').value.trim(),
+                    "cover": document.getElementById('cover').value.trim(),
+                    "genre": document.getElementById('genre').value.trim(),
+                    "price": document.getElementById('price').value.trim(),
+                    "rating": document.getElementById('rating').value.trim()
+                };
+                
+                // Validate all fields are present
+                const requiredFields = ['ISBN', 'title', 'author', 'year', 'publisher', 'cover', 'genre', 'price', 'rating'];
+                let valid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!book[field] && book[field] !== 0) {
+                        addTestResult(`Book object missing: ${field}`, false);
+                        valid = false;
+                    }
+                });
+                
+                if (valid) {
+                    addTestResult("Book object created successfully with all fields", true);
+                    console.log("Generated book object:", book);
+                    
+                    // Test specific field types
+                    if (typeof book.year === 'number') {
+                        addTestResult("Year field is numeric", true);
+                    } else {
+                        addTestResult("Year field should be numeric", false);
+                    }
+                    
+                    if (book.genre && typeof book.genre === 'string') {
+                        addTestResult(`Genre field populated: ${book.genre}`, true);
+                    } else {
+                        addTestResult("Genre field issue", false);
+                    }
+                    
+                    if (book.price && parseFloat(book.price) > 0) {
+                        addTestResult(`Price field valid: $${book.price}`, true);
+                    } else {
+                        addTestResult("Price field should be a positive number", false);
+                    }
+                    
+                    if (book.rating && parseFloat(book.rating) >= 1 && parseFloat(book.rating) <= 5) {
+                        addTestResult(`Rating field valid: ${book.rating}/5`, true);
+                    } else {
+                        addTestResult("Rating should be between 1 and 5", false);
+                    }
+                }
+            } catch (error) {
+                addTestResult(`Error creating book object: ${error.message}`, false);
+            }
+        }
+        
+        // Run initial tests
+        window.onload = function() {
+            addTestResult("Frontend test page loaded successfully", true);
+            addTestResult("Testing new fields: Genre, Price, Rating", true);
+            
+            // Test if new form fields exist
+            const newFields = ['genre', 'price', 'rating'];
+            newFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element) {
+                    addTestResult(`New field '${field}' found in form`, true);
+                } else {
+                    addTestResult(`New field '${field}' missing from form`, false);
+                }
+            });
+        };
+    </script>
+</body>
+</html>

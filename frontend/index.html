@@ -35,6 +35,23 @@
             <input type="number" id="add-year" placeholder="Year" required>
             <input type="text" id="add-publisher" placeholder="Publisher" required>
             <input type="url" id="add-cover" placeholder="Cover URL" required>
+            <select id="add-genre" required>
+                <option value="">Select Genre</option>
+                <option value="Fiction">Fiction</option>
+                <option value="History">History</option>
+                <option value="Science">Science</option>
+                <option value="Education">Education</option>
+                <option value="Thriller">Thriller</option>
+                <option value="Mystery">Mystery</option>
+                <option value="Self-Help">Self-Help</option>
+                <option value="Cooking">Cooking</option>
+                <option value="Humor">Humor</option>
+                <option value="Children">Children</option>
+                <option value="Young Adult">Young Adult</option>
+                <option value="Fantasy">Fantasy</option>
+            </select>
+            <input type="number" id="add-price" placeholder="Price (e.g., 19.99)" step="0.01" min="0" required>
+            <input type="number" id="add-rating" placeholder="Rating (1-5)" step="0.1" min="1" max="5" required>
             <div style="display:flex;gap:1rem;justify-content:center;margin-top:1rem;">
                 <button type="button" id="cancel-add">Cancel</button>
                 <button type="submit">Submit</button>

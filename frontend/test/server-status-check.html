@@ -54,17 +54,64 @@
                     resultsDiv.innerHTML += `<div class="status error">✗ CORS preflight failed: ${corsError.message}</div>`;
                 }
                 
-                // Test 4: Simple API call
+                // Test 4: Simple API call (should return 401)
                 try {
                     const apiResponse = await fetch('http://localhost:8000/books', {
                         method: 'GET',
                         mode: 'cors'
                     });
                     const apiData = await apiResponse.text();
-                    resultsDiv.innerHTML += `<div class="status success">✓ API call successful! Status: ${apiResponse.status}</div>`;
-                    resultsDiv.innerHTML += `<div class="status info">Response preview: ${apiData.substring(0, 200)}...</div>`;
+                    if (apiResponse.status === 401) {
+                        resultsDiv.innerHTML += `<div class="status success">✓ API authentication working! Status: ${apiResponse.status}</div>`;
+                        resultsDiv.innerHTML += `<div class="status info">Response: ${apiData}</div>`;
+                    } else {
+                        resultsDiv.innerHTML += `<div class="status info">API call status: ${apiResponse.status}</div>`;
+                        resultsDiv.innerHTML += `<div class="status info">Response preview: ${apiData.substring(0, 200)}...</div>`;
+                    }
                 } catch (apiError) {
                     resultsDiv.innerHTML += `<div class="status error">✗ API call failed: ${apiError.message}</div>`;
+                }
+                
+                // Test 5: Login endpoint test
+                try {
+                    const loginResponse = await fetch('http://localhost:8000/login', {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Basic ' + btoa('user:123')
+                        }
+                    });
+                    
+                    if (loginResponse.status === 200) {
+                        const loginData = await loginResponse.json();
+                        resultsDiv.innerHTML += `<div class="status success">✓ Login endpoint working! Got token: ${loginData.token.substring(0, 20)}...</div>`;
+                        
+                        // Test 6: Authenticated API call
+                        try {
+                            const authApiResponse = await fetch('http://localhost:8000/books', {
+                                method: 'GET',
+                                mode: 'cors',
+                                headers: {
+                                    'Authorization': 'Bearer ' + loginData.token
+                                }
+                            });
+                            
+                            if (authApiResponse.status === 200) {
+                                const books = await authApiResponse.json();
+                                resultsDiv.innerHTML += `<div class="status success">✓ Authenticated API call successful! Found ${books.length} books</div>`;
+                            } else {
+                                resultsDiv.innerHTML += `<div class="status error">✗ Authenticated API call failed: ${authApiResponse.status}</div>`;
+                            }
+                        } catch (authError) {
+                            resultsDiv.innerHTML += `<div class="status error">✗ Authenticated API call error: ${authError.message}</div>`;
+                        }
+                        
+                    } else {
+                        const loginError = await loginResponse.text();
+                        resultsDiv.innerHTML += `<div class="status error">✗ Login failed: ${loginResponse.status} - ${loginError}</div>`;
+                    }
+                } catch (loginError) {
+                    resultsDiv.innerHTML += `<div class="status error">✗ Login endpoint error: ${loginError.message}</div>`;
                 }
                 
             } catch (error) {

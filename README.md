@@ -4,8 +4,9 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 
 ## Features
 - **Session-based authentication** with Bearer token support
-- **Add new books** with comprehensive validation and duplicate checking
+- **Add new books** with comprehensive validation and duplicate checking (includes genre, price, and rating)
 - **Import books** from a `books.json` file with progress feedback
+- **Enhanced book display** showing cover, title, author, year, genre, price, and rating
 - **Real-time notifications** via snackbar alerts for all user actions
 - **Responsive, minimalist UI** (plain JavaScript, CSS)
 - **PostgreSQL database integration** with full CRUD operations
@@ -15,21 +16,55 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 
 ## Installation & Setup
 
+### Prerequisites
+- Python 3.8 or higher
+- PostgreSQL database
+- Node.js (optional, for SASS compilation)
+
 ### Backend
-1. **Install dependencies:**
+1. **Create and activate virtual environment:**
+   ```sh
+   # Create virtual environment
+   python -m venv .venv
+   
+   # Activate virtual environment
+   # On Windows:
+   .venv\Scripts\activate
+   # On macOS/Linux:
+   source .venv/bin/activate
+   ```
+
+2. **Install dependencies:**
    ```sh
    cd backend
    pip install -r requirements.txt
    ```
-2. **Configure database:**
+
+3. **Configure database:**
    - Ensure PostgreSQL is running and a database named `Books` exists with a `books` table:
-     - Columns: `isbn` (PK), `title`, `author`, `year`, `publisher`, `img_m`
-3. **Set password:**
+     - Columns: `isbn` (PK), `title`, `author`, `year`, `publisher`, `img_m`, `genre`, `price`, `rating`
+   - Example SQL to create the table:
+     ```sql
+     CREATE TABLE books (
+         isbn VARCHAR(20) PRIMARY KEY,
+         title VARCHAR(500),
+         author VARCHAR(200),
+         year INTEGER,
+         publisher VARCHAR(200),
+         img_m VARCHAR(500),
+         genre VARCHAR(50),
+         price VARCHAR(10),
+         rating VARCHAR(5)
+     );
+     ```
+
+4. **Set password:**
    - Edit `backend/config.py` and set your desired password:
      ```python
      PASSWORD = "123"
      ```
-4. **Run the backend:**
+
+5. **Run the backend:**
    ```sh
    uvicorn main:app --reload
    ```
@@ -65,8 +100,16 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 - **Backend:**
   ```sh
   cd backend
-  python test_auth_flow.py  # Test authentication flow
-  python end_to_end_test.py # Test complete API flow
+  
+  # Use the test runner (recommended)
+  python run_tests.py list                    # List all available tests
+  python run_tests.py all                     # Run key tests
+  python run_tests.py test_new_fields         # Run specific test
+  
+  # Or run tests directly from tests/ directory
+  python tests/test_auth_flow.py              # Test authentication flow
+  python tests/end_to_end_test.py             # Test complete API flow
+  python tests/complete_test.py               # Complete flow with proper field handling
   ```
 - **Frontend:**
   - Open `frontend/test/form-tests.html` for comprehensive form tests
@@ -74,19 +117,19 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 
 ## Available Tests
 
-### Backend Test Suite
+### Backend Test Suite (Located in `backend/tests/`)
 
 #### Core Testing Scripts
-##### `test_auth_flow.py`
+##### `tests/test_auth_flow.py`
 - **Purpose:** Tests the complete authentication and book addition workflow
 - **Functionality:**
   - Validates HTTP Basic Auth login process
   - Tests Bearer token authentication for protected endpoints
   - Verifies book addition with proper authorization
   - Confirms database persistence of added books
-- **Usage:** `python test_auth_flow.py`
+- **Usage:** `python tests/test_auth_flow.py`
 
-##### `end_to_end_test.py`
+##### `tests/end_to_end_test.py`
 - **Purpose:** Comprehensive API testing suite
 - **Functionality:**
   - Tests server connectivity and availability
@@ -94,54 +137,54 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
   - Tests book addition with different data formats
   - Verifies book retrieval functionality
   - Tests error handling and validation
-- **Usage:** `python end_to_end_test.py`
+- **Usage:** `python tests/end_to_end_test.py`
 
-##### `complete_test.py`
+##### `tests/complete_test.py`
 - **Purpose:** Full flow testing using Python's urllib (no external dependencies)
 - **Functionality:**
   - Tests login flow identical to frontend implementation
   - Validates book addition with pure Python HTTP requests
   - Demonstrates backend compatibility with different HTTP libraries
-- **Usage:** `python complete_test.py`
+- **Usage:** `python tests/complete_test.py`
 
 #### Authentication & Token Testing
-##### `token_test.py`
+##### `tests/token_test.py`
 - **Purpose:** Specific token validation testing
 - **Functionality:**
   - Tests problematic tokens from frontend logs
   - Compares fresh vs. expired token behavior
   - Diagnoses authentication issues
-- **Usage:** `python token_test.py`
+- **Usage:** `python tests/token_test.py`
 
-##### `test_auth_fix.py`
+##### `tests/test_auth_fix.py`
 - **Purpose:** Validates authentication system fixes
 - **Functionality:**
   - Tests Bearer token authentication after system updates
   - Verifies proper handling of authorization headers
   - Confirms book addition with authenticated requests
-- **Usage:** `python test_auth_fix.py`
+- **Usage:** `python tests/test_auth_fix.py`
 
 #### Specialized Testing Scripts
-##### `test_add_book.py`
+##### `tests/test_add_book.py`
 - **Purpose:** Focused book addition testing
 - **Functionality:**
   - Tests manual book addition workflow
   - Validates book data persistence
   - Tests authorization headers formatting
-- **Usage:** `python test_add_book.py` (update password variable first)
+- **Usage:** `python tests/test_add_book.py` (update password variable first)
 
-##### `simple_test.py`
+##### `tests/simple_test.py`
 - **Purpose:** Basic connectivity and functionality testing
 - **Functionality:**
   - Tests server connection and availability
   - Basic login functionality testing
   - Simple book addition testing
-- **Usage:** `python simple_test.py`
+- **Usage:** `python tests/simple_test.py`
 
-##### `quick_test.py`, `manual_test.py`
+##### `tests/quick_test.py`, `tests/manual_test.py`
 - **Purpose:** Quick debugging and manual testing utilities
 - **Functionality:** Minimal test scripts for rapid debugging
-- **Usage:** `python [script_name].py`
+- **Usage:** `python tests/[script_name].py`
 
 ### Frontend Test Suite
 
@@ -220,18 +263,24 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 ```bash
 cd backend
 
-# Run core authentication and functionality tests
-python test_auth_flow.py
-python end_to_end_test.py
-python complete_test.py
+# Use the test runner (recommended)
+python run_tests.py all                    # Run all key tests
+python run_tests.py list                   # List available tests  
+python run_tests.py test_new_fields        # Run specific test
+
+# Or run tests directly from tests/ directory
+python tests/test_auth_flow.py             # Core authentication test
+python tests/end_to_end_test.py            # Comprehensive API test
+python tests/complete_test.py              # Complete flow test
 
 # Run specialized tests
-python test_auth_fix.py
-python token_test.py
-python test_add_book.py
+python tests/test_auth_fix.py              # Authentication fixes
+python tests/token_test.py                 # Token validation
+python tests/test_add_book.py              # Book addition test
 
-# Quick connectivity tests
-python simple_test.py
+# Quick connectivity tests  
+python tests/simple_test.py               # Basic connectivity
+python tests/diagnose_500_error.py        # Database diagnostics
 ```
 
 #### Frontend Test Execution
@@ -239,6 +288,7 @@ python simple_test.py
    - Open `frontend/test/form-tests.html` in browser
    - Tests run automatically on page load
    - View results in browser console and on page
+   - **Coverage:** 12 comprehensive test cases including session management, form handling, network requests, and error scenarios
 
 2. **Professional Test Runner:**
    - Open `frontend/test/test-runner.html` in browser
@@ -263,7 +313,16 @@ uvicorn main:app --reload
 
 # Terminal 2: Run backend tests
 cd backend
-python test_auth_flow.py && python end_to_end_test.py && python complete_test.py
+python run_tests.py all                     # Run all key tests with test runner
+python run_tests.py list                    # List all available tests
+python run_tests.py comprehensive_test      # Run comprehensive functionality test
+
+# OR run individual tests:
+python tests/test_auth_flow.py && python tests/end_to_end_test.py && python tests/complete_test.py
+
+# For debugging server issues:
+python tests/diagnose_500_error.py          # Database diagnostics
+python tests/isolated_add_test.py          # Isolated add-book testing
 
 # Browser: Open frontend test files
 # 1. frontend/test/form-tests.html
@@ -303,9 +362,15 @@ backend/                    # FastAPI backend
 ├── config.py              # Configuration (password)
 ├── requirements.txt       # Python dependencies
 ├── sessions.pkl           # Session token storage
-├── test_auth_flow.py      # Authentication testing
-├── end_to_end_test.py     # Complete API testing
-└── debug_*.py             # Various debugging scripts
+├── run_tests.py           # Test runner script
+└── tests/                 # Test files directory
+    ├── __init__.py        # Python package initialization
+    ├── test_auth_flow.py  # Authentication testing
+    ├── end_to_end_test.py # Complete API testing
+    ├── complete_test.py   # Full flow testing
+    ├── test_new_fields.py # New fields testing
+    ├── diagnose_500_error.py # Database diagnostics
+    └── *.py               # Various other test scripts
 
 frontend/                   # Frontend application
 ├── index.html             # Main application page
@@ -332,12 +397,22 @@ README.md                  # This file
 - ✅ **Comprehensive testing** - Frontend and backend test suites
 - ✅ **Session management** - Robust token validation and cleanup
 - ✅ **CORS support** - Cross-origin request handling
+- ✅ **Fixed field consistency** - Updated all tests to use "gender" field consistently
+- ✅ **Organized test structure** - All backend tests moved to dedicated `tests/` directory
+- ✅ **Added test runner** - Convenient `run_tests.py` script for easy test execution
+- ✅ **Database diagnostics** - Tools to troubleshoot database issues and field mapping
 
 ## Troubleshooting
 - **401 Unauthorized errors:** Ensure you're logged in and have a valid session token
 - **Database connection issues:** Verify PostgreSQL is running and the database exists
 - **Import failures:** Check that `books.json` exists and has the correct format
 - **CORS errors:** Serve the frontend from a local server instead of opening directly
+- **500 Internal Server Errors when adding books:** The server may need to be restarted if it becomes unresponsive. Stop the server (Ctrl+C) and restart with `uvicorn main:app --reload`
+- **Field mapping issues:** The database has both 'gender' and 'genre' columns - the Book model uses 'gender' column for data storage
+- **Test book duplicates:** Test books persist in the database. Use unique ISBNs or manually clean test data if needed
 
 ## License
 MIT
+
+Used adjusted data set:
+J. Schler, M. Koppel, S. Argamon and J. Pennebaker (2006). Effects of Age and Gender on Blogging in Proceedings of 2006 AAAI Spring Symposium on Computational Approaches for Analyzing Weblogs. URL: http://www.cs.biu.ac.il/~schlerj/schler_springsymp06.pdf

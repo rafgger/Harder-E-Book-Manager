@@ -110,12 +110,15 @@
             const frontendToken = '6f84f861a8384eebd0bb7ba5f1af50f9';
             
             const bookData = {
-                "ISBN": "123",
-                "title": "Default Title", 
-                "author": "Default Author",
+                "ISBN": "frontend-debug-test",
+                "title": "Frontend Debug Test Book", 
+                "author": "Debug Author",
                 "year": 2025,
-                "publisher": "Default Publisher",
-                "cover": "http://example.com/default-cover.jpg"
+                "publisher": "Debug Publisher",
+                "cover": "http://example.com/debug-cover.jpg",
+                "gender": "Fiction",  // Required field - backend expects "gender"
+                "price": "19.99",     // Required field
+                "rating": "4.5"       // Required field
             };
             
             log(`Testing token: ${frontendToken}`);
@@ -185,12 +188,15 @@
             // Now test the actual form submission
             // Simulate exactly what frontend does
             const book = {
-                "ISBN": "123",
-                "title": "Default Title",
-                "author": "Default Author", 
+                "ISBN": "frontend-form-test",
+                "title": "Frontend Form Test",
+                "author": "Form Test Author", 
                 "year": 2025,
-                "publisher": "Default Publisher",
-                "cover": "http://example.com/default-cover.jpg"
+                "publisher": "Form Test Publisher",
+                "cover": "http://example.com/form-test-cover.jpg",
+                "gender": "Non-Fiction",  // Required field - backend expects "gender" 
+                "price": "24.99",         // Required field
+                "rating": "4.2"           // Required field
             };
             
             log(`[DEBUG] Submitting book to /add-book: ${JSON.stringify(book)}`);

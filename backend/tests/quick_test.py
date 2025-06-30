@@ -10,15 +10,14 @@ def test_backend():
     print("=" * 50)
     
     try:
-        # Test 1: Server connectivity
+        # Test 1: Server connectivity (use a valid endpoint)
         print("\n1. Testing server connectivity...")
-        response = requests.get(base_url, timeout=5)
+        response = requests.get(f"{base_url}/docs", timeout=5)
         print(f"   Server status: {response.status_code}")
         
-        # Test 2: Login
+        # Test 2: Login (use HTTP Basic Auth)
         print("\n2. Testing login...")
-        login_data = {"username": "user", "password": "pass"}
-        login_response = requests.post(f"{base_url}/login", json=login_data, timeout=5)
+        login_response = requests.post(f"{base_url}/login", auth=("", "123"), timeout=5)  # Empty username, password "123"
         print(f"   Login status: {login_response.status_code}")
         
         if login_response.status_code == 200:
@@ -26,7 +25,7 @@ def test_backend():
             token = token_data.get("token")
             print(f"   Token received: {token}")
             
-            # Test 3: Add book with new token
+            # Test 3: Add book with new token (include all required fields)
             print("\n3. Testing add-book with fresh token...")
             book_data = {
                 "ISBN": "end-to-end-test-123",
@@ -34,7 +33,10 @@ def test_backend():
                 "author": "Test Author",
                 "year": 2025,
                 "publisher": "Test Publisher",
-                "cover": "http://example.com/test-cover.jpg"
+                "cover": "http://example.com/test-cover.jpg",
+                "gender": "Fiction",  # Required field
+                "price": "19.99",     # Required field
+                "rating": "4.5"       # Required field
             }
             
             headers = {"Authorization": f"Bearer {token}"}
@@ -53,7 +55,10 @@ def test_backend():
                 "author": "Frontend Author",
                 "year": 2025,
                 "publisher": "Frontend Publisher",
-                "cover": "http://example.com/frontend-cover.jpg"
+                "cover": "http://example.com/frontend-cover.jpg",
+                "gender": "Non-Fiction",  # Required field
+                "price": "24.99",         # Required field
+                "rating": "4.0"           # Required field
             }
             
             frontend_response = requests.post(f"{base_url}/add-book", json=frontend_book_data, headers=frontend_headers, timeout=5)

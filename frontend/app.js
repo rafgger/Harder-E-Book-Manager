@@ -67,6 +67,9 @@ function renderBooks(books) {
             <div class="book-title">${book.title}</div>
             <div class="book-author">${book.author}</div>
             <div class="book-year">${book.year}</div>
+            <div class="book-genre">${book.genre || 'Unknown'}</div>
+            <div class="book-price">$${book.price || 'N/A'}</div>
+            <div class="book-rating">★ ${book.rating || 'N/A'}</div>
         </div>
     `).join("");
 }
@@ -80,6 +83,9 @@ function renderBookDetail(book) {
         <div class="meta"><strong>Year:</strong> ${book.year}</div>
         <div class="meta"><strong>Publisher:</strong> ${book.publisher}</div>
         <div class="meta"><strong>ISBN:</strong> ${book.ISBN}</div>
+        <div class="meta"><strong>Genre:</strong> ${book.genre || 'Unknown'}</div>
+        <div class="meta"><strong>Price:</strong> $${book.price || 'N/A'}</div>
+        <div class="meta"><strong>Rating:</strong> ★ ${book.rating || 'N/A'}/5</div>
     `;
 }
 
@@ -275,7 +281,10 @@ if (addForm) {
             "author": document.getElementById("add-author").value.trim(),
             "year": parseInt(document.getElementById("add-year").value, 10),
             "publisher": document.getElementById("add-publisher").value.trim(),
-            "cover": document.getElementById("add-cover").value.trim()
+            "cover": document.getElementById("add-cover").value.trim(),
+            "gender": document.getElementById("add-genre").value.trim(),  // Backend expects "gender" field
+            "price": document.getElementById("add-price").value.trim(),
+            "rating": document.getElementById("add-rating").value.trim()
         };
         const token = getSessionToken();
         if (!token) {

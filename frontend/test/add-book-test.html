@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Backend Add Book Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .debug { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Backend Add Book Test</h1>
+    <div id="results">Testing add book functionality...</div>
+    
+    <script>
+        async function testAddBook() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Step 1: Login to get a fresh token
+                resultsDiv.innerHTML += `<div class="status info">Step 1: Logging in to get fresh token...</div>`;
+                
+                const loginResponse = await fetch('http://localhost:8000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Basic ' + btoa('user:123')
+                    }
+                });
+                
+                if (loginResponse.status !== 200) {
+                    const loginError = await loginResponse.text();
+                    resultsDiv.innerHTML += `<div class="status error">✗ Login failed: ${loginResponse.status} - ${loginError}</div>`;
+                    return;
+                }
+                
+                const loginData = await loginResponse.json();
+                const token = loginData.token;
+                resultsDiv.innerHTML += `<div class="status success">✓ Login successful! Token: ${token.substring(0, 20)}...</div>`;
+                
+                // Step 2: Test add-book with all required fields including new ones
+                resultsDiv.innerHTML += `<div class="status info">Step 2: Testing add-book with fresh token...</div>`;
+                
+                const timestamp = Date.now();
+                const testBook = {
+                    "ISBN": `test-book-${timestamp}`,
+                    "title": "Test Book Title",
+                    "author": "Test Author",
+                    "year": 2025,
+                    "publisher": "Test Publisher",
+                    "cover": "http://example.com/test-cover.jpg",
+                    "gender": "Fiction",  // Backend expects "gender" field
+                    "price": "19.99",
+                    "rating": "4.5"
+                };
+                
+                resultsDiv.innerHTML += `<div class="status debug">Request data: ${JSON.stringify(testBook, null, 2)}</div>`;
+                
+                const addBookResponse = await fetch('http://localhost:8000/add-book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(testBook)
+                });
+                
+                const responseText = await addBookResponse.text();
+                resultsDiv.innerHTML += `<div class="status debug">Response status: ${addBookResponse.status}</div>`;
+                resultsDiv.innerHTML += `<div class="status debug">Response text: ${responseText}</div>`;
+                
+                if (addBookResponse.status === 200) {
+                    resultsDiv.innerHTML += `<div class="status success">✓ Add book successful!</div>`;
+                    
+                    // Step 3: Verify the book was added by retrieving it
+                    resultsDiv.innerHTML += `<div class="status info">Step 3: Verifying book was added...</div>`;
+                    
+                    const getBooksResponse = await fetch('http://localhost:8000/books', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                    
+                    if (getBooksResponse.status === 200) {
+                        const books = await getBooksResponse.json();
+                        const addedBook = books.find(book => book.ISBN === testBook.ISBN);
+                        
+                        if (addedBook) {
+                            resultsDiv.innerHTML += `<div class="status success">✓ Book verified in database!</div>`;
+                            resultsDiv.innerHTML += `<div class="status debug">Retrieved book: ${JSON.stringify(addedBook, null, 2)}</div>`;
+                        } else {
+                            resultsDiv.innerHTML += `<div class="status error">✗ Book not found in database</div>`;
+                        }
+                    } else {
+                        resultsDiv.innerHTML += `<div class="status error">✗ Failed to retrieve books: ${getBooksResponse.status}</div>`;
+                    }
+                    
+                } else {
+                    resultsDiv.innerHTML += `<div class="status error">✗ Add book failed: ${addBookResponse.status} - ${responseText}</div>`;
+                    
+                    if (addBookResponse.status === 400) {
+                        resultsDiv.innerHTML += `<div class="status info">This might be a validation error - check if all required fields are present</div>`;
+                    } else if (addBookResponse.status === 401) {
+                        resultsDiv.innerHTML += `<div class="status info">Authentication error - the token might be invalid</div>`;
+                    } else if (addBookResponse.status === 500) {
+                        resultsDiv.innerHTML += `<div class="status info">Server error - check backend logs for details</div>`;
+                    }
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="status error">✗ Test failed with error: ${error.message}</div>`;
+                console.error('Test error:', error);
+            }
+        }
+        
+        // Run test when page loads
+        window.addEventListener('load', testAddBook);
+    </script>
+</body>
+</html>

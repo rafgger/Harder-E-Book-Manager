@@ -6,8 +6,8 @@ import os
 import pickle
 import sys
 
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(__file__))
+# Add parent directory to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from main import load_sessions, save_sessions, SESSIONS_FILE
 import secrets
