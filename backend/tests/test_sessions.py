@@ -7,7 +7,7 @@ import sys
 import pickle
 
 # Add the current directory to Python path so we can import the functions
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from main import load_sessions, save_sessions, SESSIONS_FILE
 

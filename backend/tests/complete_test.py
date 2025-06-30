@@ -9,6 +9,7 @@ import urllib.error
 import json
 import base64
 import sys
+import socket
 
 def test_complete_flow():
     print("=== Complete Flow Test ===")
@@ -16,9 +17,20 @@ def test_complete_flow():
     base_url = "http://localhost:8000"
     password = "123"  # From config.py
     
+    # Step 0: Test server connectivity
+    print("\n0. Testing server connectivity...")
+    try:
+        sock = socket.create_connection(("localhost", 8000), timeout=5)
+        sock.close()
+        print("✅ Server is reachable on port 8000")
+    except Exception as e:
+        print(f"❌ Server connection failed: {e}")
+        return False
+    
     # Step 1: Login
     print("\n1. Testing login...")
     auth_header = "Basic " + base64.b64encode(f":{password}".encode()).decode()
+    print(f"   Auth header: {auth_header}")
     
     login_req = urllib.request.Request(
         f"{base_url}/login",
@@ -27,7 +39,7 @@ def test_complete_flow():
     )
     
     try:
-        with urllib.request.urlopen(login_req) as response:
+        with urllib.request.urlopen(login_req, timeout=10) as response:
             if response.status == 200:
                 login_data = json.loads(response.read().decode())
                 token = login_data["token"]
@@ -37,7 +49,8 @@ def test_complete_flow():
                 print(f"❌ Login failed with status {response.status}")
                 return False
     except urllib.error.HTTPError as e:
-        print(f"❌ Login failed with HTTP {e.code}: {e.read().decode()}")
+        error_response = e.read().decode()
+        print(f"❌ Login failed with HTTP {e.code}: {error_response}")
         return False
     except Exception as e:
         print(f"❌ Login failed: {e}")
@@ -46,12 +59,15 @@ def test_complete_flow():
     # Step 2: Add book (immediately after login)
     print("\n2. Testing add book...")
     book_data = {
-        "ISBN": "123",
-        "title": "Default Title", 
-        "author": "Default Author",
+        "ISBN": "complete-test-123",
+        "title": "Complete Test Book", 
+        "author": "Test Author",
         "year": 2025,
-        "publisher": "Default Publisher",
-        "cover": "http://example.com/default-cover.jpg"
+        "publisher": "Test Publisher",
+        "cover": "http://example.com/test-cover.jpg",
+        "gender": "Fiction",  # Note: backend expects "gender" field name
+        "price": "19.99",
+        "rating": "4.5"
     }
     
     print(f"   Book data: {book_data}")
@@ -68,7 +84,7 @@ def test_complete_flow():
     )
     
     try:
-        with urllib.request.urlopen(add_book_req) as response:
+        with urllib.request.urlopen(add_book_req, timeout=10) as response:
             if response.status == 200:
                 add_book_data = json.loads(response.read().decode())
                 print(f"✅ Add book successful!")

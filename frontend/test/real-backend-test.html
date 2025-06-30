@@ -36,7 +36,7 @@
         <div class="form-group">
             <h3>2. Add Book Test (with known token)</h3>
             <label for="test-token">Session Token:</label>
-            <input type="text" id="test-token" value="6f84f861a8384eebd0bb7ba5f1af50f9" placeholder="Enter session token">
+            <input type="text" id="test-token" value="" placeholder="Enter session token or use Login Test to get fresh token">
             <button class="btn-primary" onclick="testAddBookWithKnownToken()">Test Add Book</button>
             <div id="add-book-result"></div>
         </div>
@@ -68,6 +68,18 @@
                 <div class="form-group">
                     <label for="sim-cover">Cover URL:</label>
                     <input type="text" id="sim-cover" value="http://example.com/default-cover.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="sim-genre">Genre:</label>
+                    <input type="text" id="sim-genre" value="Fiction">
+                </div>
+                <div class="form-group">
+                    <label for="sim-price">Price:</label>
+                    <input type="number" id="sim-price" value="19.99" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="sim-rating">Rating:</label>
+                    <input type="number" id="sim-rating" value="4.5" step="0.1" min="0" max="5">
                 </div>
             </div>
             <button class="btn-primary" onclick="simulateFrontendSubmission()">Simulate Frontend Form Submit</button>
@@ -103,15 +115,15 @@
             updateStatus('Testing login...', 'info');
             
             try {
+                // Use HTTP Basic Auth as the backend expects
+                const credentials = btoa('user:123'); // username:password base64 encoded
+                
                 const response = await fetch('http://localhost:8000/login', {
                     method: 'POST',
                     headers: {
+                        'Authorization': `Basic ${credentials}`,
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: 'user',
-                        password: 'pass'
-                    })
+                    }
                 });
                 
                 log(`Login response status: ${response.status}`);
@@ -156,7 +168,10 @@
                 "author": "Test Author Name",
                 "year": 2025,
                 "publisher": "Test Publisher",
-                "cover": "http://example.com/test-cover.jpg"
+                "cover": "http://example.com/test-cover.jpg",
+                "gender": "Fiction",
+                "price": "19.99",
+                "rating": "4.5"
             };
             
             const headers = {
@@ -201,8 +216,19 @@
             log('Simulating exact frontend form submission...');
             updateStatus('Simulating frontend form submission...', 'info');
             
-            // Get token from localStorage (simulating frontend behavior)
-            const storedToken = '6f84f861a8384eebd0bb7ba5f1af50f9'; // The exact token from your logs
+            // Get token from the test field (use fresh token from login)
+            let storedToken = document.getElementById('test-token').value.trim();
+            
+            if (!storedToken) {
+                log('[DEBUG] No token available, attempting to login first...');
+                await testLogin();
+                storedToken = document.getElementById('test-token').value.trim();
+                
+                if (!storedToken) {
+                    showResult('frontend-sim-result', 'Could not get valid token for simulation', false);
+                    return;
+                }
+            }
             
             // Build book object exactly as frontend does
             const book = {
@@ -211,7 +237,10 @@
                 "author": document.getElementById('sim-author').value.trim(),
                 "year": parseInt(document.getElementById('sim-year').value, 10),
                 "publisher": document.getElementById('sim-publisher').value.trim(),
-                "cover": document.getElementById('sim-cover').value.trim()
+                "cover": document.getElementById('sim-cover').value.trim(),
+                "gender": document.getElementById('sim-genre').value.trim(),  // Backend expects "gender" field
+                "price": document.getElementById('sim-price').value.trim(),
+                "rating": document.getElementById('sim-rating').value.trim()
             };
             
             log(`[DEBUG] Submitting book to /add-book: ${JSON.stringify(book)}`);
@@ -239,9 +268,9 @@
                     log(`[DEBUG] Error response: ${errorData}`);
                     
                     if (response.status === 401) {
-                        log('[DEBUG] Session expired. Redirecting to login.');
-                        showResult('frontend-sim-result', `Frontend simulation reproduced the 401 error! This matches your logs exactly.`, false);
-                        updateStatus('Frontend simulation reproduced 401 error', 'fail');
+                        log('[DEBUG] Session expired. This indicates token management issue.');
+                        showResult('frontend-sim-result', `Frontend simulation got 401 error. Token may be expired or invalid.`, false);
+                        updateStatus('Frontend simulation got 401 error', 'fail');
                     } else {
                         showResult('frontend-sim-result', `Frontend simulation failed: ${response.status} - ${errorData}`, false);
                         updateStatus(`Frontend simulation failed (${response.status})`, 'fail');

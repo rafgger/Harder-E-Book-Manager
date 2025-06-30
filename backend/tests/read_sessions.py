@@ -5,7 +5,7 @@ Read and display the contents of sessions.pkl
 import pickle
 import os
 
-SESSIONS_FILE = os.path.join(os.path.dirname(__file__), "sessions.pkl")
+SESSIONS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sessions.pkl")
 
 def read_sessions_file():
     print("=== Reading sessions.pkl ===")
