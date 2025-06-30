@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Frontend Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-result { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; border-radius: 4px; }
+        .test-pass { border-color: #4CAF50; background-color: #f0f8f0; }
+        .test-fail { border-color: #f44336; background-color: #fdf0f0; }
+        .test-info { border-color: #2196F3; background-color: #f0f8ff; }
+        .debug { font-family: monospace; font-size: 12px; background: #f9f9f9; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Frontend Test</h1>
+        <div id="results">Loading...</div>
+        <div id="debug" class="debug">Debug output will appear here...</div>
+    </div>
+    
+    <script>
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = `test-result test-${type}`;
+            result.innerHTML = (type === 'pass' ? '✓ ' : type === 'fail' ? '✗ ' : '• ') + message;
+            resultsDiv.appendChild(result);
+        }
+        
+        function addDebug(message) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+        }
+        
+        async function runSimpleTests() {
+            document.getElementById('results').innerHTML = '';
+            addDebug('Starting simple tests...');
+            
+            // Test 1: Basic JavaScript functionality
+            try {
+                addDebug('Test 1: Basic JavaScript functionality');
+                const testArray = [1, 2, 3];
+                const doubled = testArray.map(x => x * 2);
+                if (doubled.length === 3 && doubled[0] === 2) {
+                    addResult('Basic JavaScript functionality works', 'pass');
+                } else {
+                    addResult('Basic JavaScript functionality failed', 'fail');
+                }
+            } catch (error) {
+                addResult(`Basic JavaScript test error: ${error.message}`, 'fail');
+                addDebug(`Error in test 1: ${error.message}`);
+            }
+            
+            // Test 2: DOM manipulation
+            try {
+                addDebug('Test 2: DOM manipulation');
+                const testDiv = document.createElement('div');
+                testDiv.id = 'test-element';
+                testDiv.textContent = 'Test content';
+                document.body.appendChild(testDiv);
+                
+                const retrieved = document.getElementById('test-element');
+                if (retrieved && retrieved.textContent === 'Test content') {
+                    addResult('DOM manipulation works', 'pass');
+                    retrieved.remove(); // Clean up
+                } else {
+                    addResult('DOM manipulation failed', 'fail');
+                }
+            } catch (error) {
+                addResult(`DOM manipulation test error: ${error.message}`, 'fail');
+                addDebug(`Error in test 2: ${error.message}`);
+            }
+            
+            // Test 3: LocalStorage functionality
+            try {
+                addDebug('Test 3: LocalStorage functionality');
+                localStorage.setItem('test-key', 'test-value');
+                const retrieved = localStorage.getItem('test-key');
+                localStorage.removeItem('test-key');
+                
+                if (retrieved === 'test-value') {
+                    addResult('LocalStorage works', 'pass');
+                } else {
+                    addResult('LocalStorage failed', 'fail');
+                }
+            } catch (error) {
+                addResult(`LocalStorage test error: ${error.message}`, 'fail');
+                addDebug(`Error in test 3: ${error.message}`);
+            }
+            
+            // Test 4: Try to load app.js functions
+            try {
+                addDebug('Test 4: Attempting to load app.js...');
+                
+                // Create script element to load app.js
+                const script = document.createElement('script');
+                script.src = '../app.js';
+                script.onload = function() {
+                    addDebug('app.js loaded successfully');
+                    
+                    // Test if app.js functions are available
+                    setTimeout(() => {
+                        if (typeof getSessionToken === 'function') {
+                            addResult('app.js functions are available', 'pass');
+                            addDebug('getSessionToken function found');
+                            
+                            // Test the function
+                            try {
+                                localStorage.removeItem('sessionToken');
+                                const result = getSessionToken();
+                                if (result === null) {
+                                    addResult('getSessionToken works correctly', 'pass');
+                                } else {
+                                    addResult('getSessionToken returned unexpected value', 'fail');
+                                }
+                            } catch (err) {
+                                addResult(`getSessionToken error: ${err.message}`, 'fail');
+                            }
+                        } else {
+                            addResult('app.js functions not found', 'fail');
+                            addDebug('getSessionToken function not found');
+                        }
+                    }, 100);
+                };
+                script.onerror = function() {
+                    addResult('Failed to load app.js', 'fail');
+                    addDebug('app.js failed to load');
+                };
+                
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                addResult(`app.js loading test error: ${error.message}`, 'fail');
+                addDebug(`Error in test 4: ${error.message}`);
+            }
+            
+            // Test 5: Form element creation
+            try {
+                addDebug('Test 5: Form element creation');
+                const form = document.createElement('form');
+                form.id = 'test-form';
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'test-input';
+                input.value = 'test value';
+                
+                form.appendChild(input);
+                document.body.appendChild(form);
+                
+                const retrievedInput = document.getElementById('test-input');
+                if (retrievedInput && retrievedInput.value === 'test value') {
+                    addResult('Form element creation works', 'pass');
+                } else {
+                    addResult('Form element creation failed', 'fail');
+                }
+                
+                form.remove(); // Clean up
+            } catch (error) {
+                addResult(`Form creation test error: ${error.message}`, 'fail');
+                addDebug(`Error in test 5: ${error.message}`);
+            }
+            
+            addDebug('Simple tests completed');
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', function() {
+            addDebug('Page loaded, starting tests...');
+            runSimpleTests();
+        });
+        
+        // Also run immediately in case the event already fired
+        if (document.readyState === 'complete') {
+            addDebug('Document already ready, starting tests...');
+            runSimpleTests();
+        }
+    </script>
+</body>
+</html>

@@ -107,13 +107,15 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
   python run_tests.py test_new_fields         # Run specific test
   
   # Or run tests directly from tests/ directory
-  python tests/test_auth_flow.py              # Test authentication flow
-  python tests/end_to_end_test.py             # Test complete API flow
-  python tests/complete_test.py               # Complete flow with proper field handling
+  python tests/comprehensive_test.py          # Complete system test
+  python tests/test_new_fields.py             # New fields functionality
+  python tests/test_auth_flow.py              # Authentication workflow
   ```
 - **Frontend:**
-  - Open `frontend/test/form-tests.html` for comprehensive form tests
-  - Open `frontend/debug-form-test.html` for real backend testing
+  - **Test Dashboard:** Open `frontend/test/README.html` for organized test access
+  - **Unit Tests:** Open `frontend/test/form-tests.html` for comprehensive form tests
+  - **Integration Tests:** Open `frontend/test/real-backend-test.html` for backend integration
+  - **Debug Tools:** Open `frontend/test/debug-form-test.html` for troubleshooting
 
 ## Available Tests
 
@@ -186,16 +188,77 @@ A minimalist web application for managing e-books with a FastAPI backend and a m
 - **Functionality:** View current session state
 - **Usage:** `python tests/read_sessions.py`
 
-### Frontend Test Suite
+### Frontend Test Suite (Located in `frontend/test/`)
 
-#### Comprehensive Testing Pages
+#### 🎯 Test Dashboard
+##### `frontend/test/README.html`
+- **Purpose:** Interactive test suite dashboard and main entry point
+- **Functionality:**
+  - Organized access to all frontend tests
+  - Test categorization (Unit, Integration, Debug)
+  - Quick start guide and test descriptions
+  - Visual test navigation interface
+- **Usage:** Open in browser - **Recommended starting point**
+
+#### 🔧 Unit Tests (No Backend Required)
 ##### `frontend/test/form-tests.html`
 - **Purpose:** Comprehensive frontend form testing without backend dependency
 - **Functionality:**
   - Session token retrieval and validation
   - Book object construction from form data
   - Authorization header formatting
-  - Book list rendering simulation
+  - UI state management testing
+  - Mock backend interaction testing
+- **Coverage:** 12 comprehensive test cases
+- **Usage:** Open in browser, tests run automatically
+
+##### `frontend/test/test-runner.html`
+- **Purpose:** Professional Mocha/Chai testing framework
+- **Functionality:**
+  - Structured test reporting using Mocha and Chai
+  - Book rendering and display testing
+  - Login/logout flow validation
+  - Session token management verification
+- **Usage:** Open in browser (requires Mocha/Chai from CDN)
+
+#### 🔗 Integration Tests (Backend Required)
+##### `frontend/test/real-backend-test.html`
+- **Purpose:** Complete backend integration testing
+- **Functionality:**
+  - Live HTTP Basic Auth login testing
+  - Bearer token validation with real tokens
+  - Actual form submission to backend
+  - CORS and cross-origin request testing
+  - Real-time error diagnosis
+- **Usage:** Open in browser (requires running backend)
+
+##### `frontend/test/add-book-test.html`
+- **Purpose:** Focused book addition functionality testing
+- **Functionality:**
+  - Authentication flow testing
+  - Book data validation and submission
+  - Database persistence verification
+  - Error handling and validation
+- **Usage:** Open in browser (requires running backend)
+
+##### `frontend/test/server-status-check.html`
+- **Purpose:** Backend connectivity and health check
+- **Functionality:**
+  - Server availability testing
+  - API endpoint validation
+  - Response time monitoring
+  - Basic connectivity verification
+- **Usage:** Open in browser (requires running backend)
+
+#### 🐛 Debug & Diagnostic Tools
+##### `frontend/test/debug-form-test.html`
+- **Purpose:** Advanced form submission debugging and troubleshooting
+- **Functionality:**
+  - Token validation testing
+  - Request/response logging and analysis
+  - Authentication troubleshooting
+  - Session management debugging
+- **Usage:** Open in browser (requires running backend)
   - UI state management testing
   - Form prefill and cancellation logic
   - Mock backend interaction testing
@@ -288,26 +351,47 @@ python tests/read_sessions.py             # Session inspection
 ```
 
 #### Frontend Test Execution
-1. **Automated Unit Tests:**
+
+##### 🎯 Quick Start (Recommended)
+1. **Test Dashboard:**
+   - Open `frontend/test/README.html` in browser
+   - Interactive dashboard with organized test access
+   - Click on any test to launch it in a new tab
+   - Includes test descriptions and prerequisites
+
+##### 🔧 Unit Tests (No Backend Required)
+1. **Comprehensive Form Tests:**
    - Open `frontend/test/form-tests.html` in browser
    - Tests run automatically on page load
+   - **Coverage:** 12 comprehensive test cases
    - View results in browser console and on page
-   - **Coverage:** 12 comprehensive test cases including session management, form handling, network requests, and error scenarios
 
 2. **Professional Test Runner:**
    - Open `frontend/test/test-runner.html` in browser
    - Uses Mocha/Chai framework for structured testing
    - Interactive test results display
 
-3. **Real Backend Integration:**
+##### 🔗 Integration Tests (Backend Required)
+1. **Backend Connectivity Check:**
    - Start backend server: `uvicorn main:app --reload`
-   - Open `frontend/debug-form-test.html` in browser
-   - Performs live API testing with real server
+   - Open `frontend/test/server-status-check.html` in browser
+   - Quick verification of backend availability
 
-4. **CORS and Cross-Origin Testing:**
-   - Ensure backend is running
+2. **Complete Integration Testing:**
    - Open `frontend/test/real-backend-test.html` in browser
-   - Tests file:// protocol compatibility
+   - Comprehensive backend integration tests
+   - Tests authentication, form submission, CORS
+
+3. **Book Addition Testing:**
+   - Open `frontend/test/add-book-test.html` in browser
+   - Focused testing of book addition workflow
+   - Verifies database persistence
+
+##### 🐛 Debug & Troubleshooting
+1. **Form Submission Debugging:**
+   - Open `frontend/test/debug-form-test.html` in browser
+   - Advanced debugging tools for form issues
+   - Token validation and request logging
 
 #### Complete Test Run
 ```bash
@@ -318,11 +402,14 @@ uvicorn main:app --reload
 # Terminal 2: Run backend tests
 cd backend
 python run_tests.py all                     # Run all key tests with test runner
-python run_tests.py list                    # List all available tests
 python run_tests.py comprehensive_test      # Run comprehensive functionality test
 
-# OR run individual essential tests:
-python tests/comprehensive_test.py && python tests/test_new_fields.py && python tests/test_auth_flow.py
+# Browser: Open frontend test dashboard
+# 1. frontend/test/README.html               # Main test dashboard (recommended)
+# 2. frontend/test/form-tests.html           # Unit tests (no backend needed)
+# 3. frontend/test/real-backend-test.html    # Integration tests (backend required)
+# 4. frontend/test/debug-form-test.html      # Debug tools (if issues occur)
+```
 
 # For debugging server issues:
 python tests/diagnose_500_error.py          # Database diagnostics
@@ -379,10 +466,17 @@ frontend/                   # Frontend application
 ├── index.html             # Main application page
 ├── app.js                 # JavaScript application logic
 ├── style.css              # Compiled CSS styles
-├── debug-form-test.html   # Real backend testing page
-└── test/                  # Test files
-    ├── form-tests.html    # Comprehensive form tests
-    └── *.js               # Test utilities
+└── test/                  # Frontend test suite
+    ├── README.html        # Interactive test dashboard (entry point)
+    ├── README.md          # Test documentation
+    ├── form-tests.html    # Unit tests (no backend required)
+    ├── test-runner.html   # Mocha/Chai test framework
+    ├── real-backend-test.html      # Integration tests
+    ├── add-book-test.html          # Book addition testing
+    ├── server-status-check.html    # Connectivity check
+    ├── debug-form-test.html        # Debug tools
+    ├── index.html         # Legacy test index
+    └── app.test.js        # Test utilities
 
 src/                       # SASS source files
 ├── style.scss             # Main SASS source
