@@ -56,9 +56,9 @@ def comprehensive_test():
     print("\n3. Testing enhanced book addition...")
     test_books = [
         {
-            "ISBN": f"test-fiction-{timestamp}",
-            "title": "Test Fiction Novel",
-            "author": "Jane Doe",
+            "ISBN": f"tester-{timestamp}",
+            "title": "Test",
+            "author": "Tester Doe",
             "year": 2025,
             "publisher": "Test Fiction Press",
             "cover": "http://example.com/fiction.jpg",
@@ -67,9 +67,9 @@ def comprehensive_test():
             "rating": "4.5"
         },
         {
-            "ISBN": f"test-science-{timestamp}",
-            "title": "Advanced Science Concepts",
-            "author": "Dr. John Smith",
+            "ISBN": f"tester-sc-{timestamp}",
+            "title": "Tester Science Concepts",
+            "author": "Tester Smith",
             "year": 2025,
             "publisher": "Science Publishing",
             "cover": "http://example.com/science.jpg",
@@ -78,9 +78,9 @@ def comprehensive_test():
             "rating": "4.8"
         },
         {
-            "ISBN": f"test-history-{timestamp}",
-            "title": "Modern World History",
-            "author": "Prof. Alice Johnson",
+            "ISBN": f"test-hi-{timestamp}",
+            "title": "Tester World History",
+            "author": "Tester Johnson",
             "year": 2025,
             "publisher": "Academic Press",
             "cover": "http://example.com/history.jpg",

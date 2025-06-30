@@ -28,6 +28,16 @@
     
     <!-- Simple test framework -->
     <script>
+        // Wait for app.js to load before starting tests
+        function waitForAppJs() {
+            return new Promise((resolve) => {
+                if (typeof getSessionToken === 'function') {
+                    resolve();
+                } else {
+                    setTimeout(() => waitForAppJs().then(resolve), 100);
+                }
+            });
+        }
         class TestRunner {
             constructor() {
                 this.tests = [];
@@ -189,6 +199,11 @@
         
         // Test 1: Session token retrieval
         runner.test('Session token retrieval', function() {
+            // Check if getSessionToken function exists
+            if (typeof getSessionToken !== 'function') {
+                throw new Error('getSessionToken function not found - app.js may not have loaded correctly');
+            }
+            
             // Clear localStorage
             localStorage.removeItem('sessionToken');
             this.assertNull(window.getSessionToken(), 'Should return null when no token');
@@ -822,10 +837,24 @@
         });
         
         // Run tests when page loads
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                runner.run();
-            }, 100);
+        window.addEventListener('load', async function() {
+            console.log('Page loaded, waiting for app.js...');
+            
+            try {
+                await waitForAppJs();
+                console.log('app.js loaded, starting tests...');
+                setTimeout(() => {
+                    runner.run();
+                }, 100);
+            } catch (error) {
+                console.error('Failed to load app.js:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="test-result test-fail">
+                        ✗ Failed to load app.js: ${error.message}
+                        <div class="error-details">Make sure the backend server is not running or conflicting, and that app.js exists in the parent directory.</div>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>

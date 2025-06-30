@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Book Manager Frontend Test Suite</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 10px; 
+        }
+        .subtitle { 
+            text-align: center; 
+            color: #666; 
+            margin-bottom: 30px; 
+        }
+        .test-category { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #fafafa; 
+        }
+        .test-category h2 { 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 10px; 
+            margin-top: 0; 
+        }
+        .test-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 15px; 
+            margin-top: 20px; 
+        }
+        .test-item { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border: 1px solid #e0e0e0; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+        }
+        .test-item:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+        .test-title { 
+            font-weight: bold; 
+            color: #2c3e50; 
+            margin-bottom: 8px; 
+        }
+        .test-description { 
+            color: #666; 
+            font-size: 14px; 
+            margin-bottom: 12px; 
+            line-height: 1.4; 
+        }
+        .test-link { 
+            display: inline-block; 
+            padding: 8px 16px; 
+            background: #3498db; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-size: 14px; 
+            transition: background 0.2s; 
+        }
+        .test-link:hover { 
+            background: #2980b9; 
+        }
+        .test-link.secondary { 
+            background: #95a5a6; 
+        }
+        .test-link.secondary:hover { 
+            background: #7f8c8d; 
+        }
+        .test-link.success { 
+            background: #27ae60; 
+        }
+        .test-link.success:hover { 
+            background: #229954; 
+        }
+        .overview { 
+            background: #e8f4f8; 
+            padding: 20px; 
+            border-radius: 6px; 
+            margin-bottom: 30px; 
+            border-left: 4px solid #3498db; 
+        }
+        .overview h3 { 
+            margin-top: 0; 
+            color: #2c3e50; 
+        }
+        .badge { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            background: #e74c3c; 
+            color: white; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            margin-left: 8px; 
+        }
+        .badge.unit { background: #3498db; }
+        .badge.integration { background: #f39c12; }
+        .badge.backend { background: #27ae60; }
+        .badge.debug { background: #9b59b6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 E-Book Manager Frontend Test Suite</h1>
+        <p class="subtitle">Comprehensive testing dashboard for the E-Book Manager frontend application</p>
+        
+        <div class="overview">
+            <h3>📋 Test Suite Overview</h3>
+            <p><strong>Total Test Files:</strong> 8 test suites covering unit tests, integration tests, backend connectivity, and debugging tools.</p>
+            <p><strong>Coverage Areas:</strong> Authentication, Form Handling, Book Management, API Integration, Error Handling, and User Interface.</p>
+            <p><strong>Usage:</strong> Click on any test below to run it. Tests will open in new tabs/windows for isolated execution.</p>
+        </div>
+
+        <!-- Unit Tests -->
+        <div class="test-category">
+            <h2>🔧 Unit Tests <span class="badge unit">Standalone</span></h2>
+            <p>Tests that don't require backend connectivity and test individual frontend components.</p>
+            
+            <div class="test-list">
+                <div class="test-item">
+                    <div class="test-title">Comprehensive Form Tests</div>
+                    <div class="test-description">
+                        Tests all frontend functionality without backend dependency:
+                        • Session token handling • Form validation • Book object construction
+                        • UI state management • Mock API interactions
+                    </div>
+                    <a href="form-tests.html" target="_blank" class="test-link">Run Unit Tests</a>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-title">Mocha Test Runner</div>
+                    <div class="test-description">
+                        Professional test framework using Mocha/Chai:
+                        • Structured test reporting • Book rendering tests
+                        • Login/logout flow validation • Session management
+                    </div>
+                    <a href="test-runner.html" target="_blank" class="test-link">Run Mocha Tests</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Tests -->
+        <div class="test-category">
+            <h2>🔗 Integration Tests <span class="badge integration">Backend Required</span></h2>
+            <p>Tests that interact with the actual backend server at localhost:8000.</p>
+            
+            <div class="test-list">
+                <div class="test-item">
+                    <div class="test-title">Real Backend Test</div>
+                    <div class="test-description">
+                        Complete backend integration testing:
+                        • Live HTTP Basic Auth • Bearer token validation
+                        • Real form submission • CORS compatibility • Cross-origin testing
+                    </div>
+                    <a href="real-backend-test.html" target="_blank" class="test-link success">Run Backend Tests</a>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-title">Add Book Test</div>
+                    <div class="test-description">
+                        Focused testing of book addition functionality:
+                        • Authentication flow • Book data validation
+                        • Database persistence verification • Error handling
+                    </div>
+                    <a href="add-book-test.html" target="_blank" class="test-link success">Test Add Book</a>
+                </div>
+                
+                <div class="test-item">
+                    <div class="test-title">Server Status Check</div>
+                    <div class="test-description">
+                        Quick backend connectivity and health check:
+                        • Server availability • API endpoint validation
+                        • Response time monitoring • Basic connectivity test
+                    </div>
+                    <a href="server-status-check.html" target="_blank" class="test-link success">Check Server</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Tools -->
+        <div class="test-category">
+            <h2>🐛 Debug & Diagnostic Tools <span class="badge debug">Troubleshooting</span></h2>
+            <p>Advanced debugging tools for troubleshooting issues and testing specific scenarios.</p>
+            
+            <div class="test-list">
+                <div class="test-item">
+                    <div class="test-title">Form Submission Debug</div>
+                    <div class="test-description">
+                        Advanced debugging for form submission issues:
+                        • Token validation testing • Request/response logging
+                        • Authentication troubleshooting • Error diagnosis
+                    </div>
+                    <a href="debug-form-test.html" target="_blank" class="test-link secondary">Debug Form Issues</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Documentation -->
+        <div class="test-category">
+            <h2>📚 Test Documentation & Index</h2>
+            <p>Alternative test access and legacy test interfaces.</p>
+            
+            <div class="test-list">
+                <div class="test-item">
+                    <div class="test-title">Legacy Test Index</div>
+                    <div class="test-description">
+                        Original test index page:
+                        • Basic test links • Legacy interface
+                        • Simple test navigation
+                    </div>
+                    <a href="index.html" target="_blank" class="test-link secondary">View Legacy Index</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="overview" style="margin-top: 30px;">
+            <h3>🚀 Getting Started</h3>
+            <ol>
+                <li><strong>Start with Unit Tests:</strong> Run "Comprehensive Form Tests" to verify frontend functionality without backend dependency.</li>
+                <li><strong>Test Backend Connectivity:</strong> Use "Server Status Check" to ensure the backend is running at localhost:8000.</li>
+                <li><strong>Run Integration Tests:</strong> Execute "Real Backend Test" and "Add Book Test" to verify full functionality.</li>
+                <li><strong>Debug Issues:</strong> Use the debug tools if you encounter any problems.</li>
+            </ol>
+            
+            <h3>📋 Prerequisites</h3>
+            <ul>
+                <li><strong>For Unit Tests:</strong> No backend required - tests run entirely in the browser.</li>
+                <li><strong>For Integration Tests:</strong> Backend server must be running: <code>uvicorn main:app --reload</code></li>
+                <li><strong>For All Tests:</strong> Modern web browser with JavaScript enabled.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

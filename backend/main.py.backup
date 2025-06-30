@@ -1,0 +1,308 @@
+# FastAPI backend for E-Book Manager
+# Requirements: fastapi, class Book(Base):
+    __tablename__ = "books"
+    isbn = Column("isbn", String, primary_key=True, index=True)
+    title = Column("title", String)
+    author = Column("author", String)
+    year = Column("year", Integer)
+    publisher = Column("publisher", String)
+    cover = Column("img_m", String)  # Database column is 'img_m', attribute is 'cover'
+    genre = Column("genre", String)  # Database column is 'genre', attribute is 'genre'
+    price = Column("price", Numeric(10, 2))  # Database: numeric(10,2)
+    rating = Column("rating", Numeric(3, 1))  # Database: numeric(3,1)yncpg, sqlalchemy
+
+from fastapi import FastAPI, HTTPException, Depends, Request, Header
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, String, Integer, Numeric
+from sqlalchemy.future import select
+import os
+import json
+import config
+import base64
+
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+import secrets
+import pickle
+
+security = HTTPBasic()
+
+# Simple in-memory session store
+SESSIONS_FILE = os.path.join(os.path.dirname(__file__), "sessions.pkl")
+
+def load_sessions():
+    try:
+        with open(SESSIONS_FILE, "rb") as f:
+            sessions_data = pickle.load(f)
+            # Ensure we always return a set, regardless of what was stored
+            if isinstance(sessions_data, list):
+                sessions = set(sessions_data)
+            elif isinstance(sessions_data, set):
+                sessions = sessions_data
+            else:
+                sessions = set()
+            print("[DEBUG] Loaded sessions from file:", sessions)  # Debug log
+            return sessions
+    except Exception as e:
+        print("[DEBUG] Failed to load sessions:", str(e))  # Debug log
+        return set()
+
+def save_sessions(sessions):
+    try:
+        with open(SESSIONS_FILE, "wb") as f:
+            pickle.dump(list(sessions), f)
+            print("[DEBUG] Saved sessions to file:", sessions)  # Debug log
+    except Exception as e:
+        print("[DEBUG] Failed to save sessions:", str(e))  # Debug log
+
+sessions = load_sessions()
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:123456@localhost:5432/Books"
+)
+
+engine = create_async_engine(DATABASE_URL, echo=True)
+SessionLocal = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+Base = declarative_base()
+
+class Book(Base):
+    __tablename__ = "books"
+    isbn = Column("isbn", String, primary_key=True, index=True)
+    title = Column("title", String)
+    author = Column("author", String)
+    year = Column("year", Integer)
+    publisher = Column("publisher", String)
+    cover = Column("img_m", String)  # Database column is 'img_m', attribute is 'cover'
+    genre = Column("genre", String)  # Database column is 'genre', attribute is 'genre'
+    price = Column("price", Numeric(10, 2))  # Numeric type to match database schema
+    rating = Column("rating", Numeric(3, 1))  # Numeric type to match database schema
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Authentication dependency - moved before endpoints that use it
+async def authenticate(authorization: str = Header(None)):
+    # Always reload sessions from disk to get the latest tokens
+    global sessions
+    sessions = load_sessions()
+    print("[DEBUG] Incoming Authorization header:", authorization)
+    print("[DEBUG] Current session tokens:", sessions)
+    
+    if not authorization:
+        print("[DEBUG] No Authorization header provided")
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    if authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+        print("[DEBUG] Extracted Bearer token:", token)
+        print("[DEBUG] Token type:", type(token))
+        print("[DEBUG] Sessions type:", type(sessions))
+        print("[DEBUG] Is token in sessions?:", token in sessions)
+        if token in sessions:
+            print("[DEBUG] Bearer token is valid.")
+            return True
+        print("[DEBUG] Bearer token is invalid or expired.")
+        print("[DEBUG] All tokens in sessions:")
+        for i, session_token in enumerate(sessions):
+            print(f"[DEBUG]   {i}: {session_token} (type: {type(session_token)})")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    if authorization.startswith("Basic "):
+        # Handle HTTP Basic Auth for backwards compatibility
+        try:
+            credentials_b64 = authorization.split(" ", 1)[1]
+            credentials = base64.b64decode(credentials_b64).decode('utf-8')
+            username, password = credentials.split(":", 1)
+            print("[DEBUG] HTTP Basic Auth attempt with username:", username)
+            correct_password = config.PASSWORD
+            if secrets.compare_digest(password, correct_password):
+                print("[DEBUG] HTTP Basic Auth successful.")
+                return True
+            else:
+                print("[DEBUG] Incorrect password for HTTP Basic Auth.")
+                raise HTTPException(status_code=401, detail="Incorrect password")
+        except Exception as e:
+            print("[DEBUG] Failed to parse Basic Auth:", str(e))
+            raise HTTPException(status_code=401, detail="Invalid Basic Auth format")
+    
+    print("[DEBUG] Authorization header format not recognized:", authorization)
+    raise HTTPException(status_code=401, detail="Not authenticated")
+    return True
+
+@app.get("/books")
+async def get_books(auth: bool = Depends(authenticate)):
+    try:
+        async with SessionLocal() as session:
+            result = await session.execute(select(Book))
+            books = result.scalars().all()
+            return [
+                {
+                    "ISBN": b.isbn,
+                    "title": b.title,
+                    "author": b.author,
+                    "year": b.year,
+                    "publisher": b.publisher,
+                    "cover": b.cover,
+                    "genre": b.genre or "",
+                    "price": str(b.price) if b.price is not None else "",
+                    "rating": str(b.rating) if b.rating is not None else ""
+                }
+                for b in books
+            ]
+    except Exception as e:
+        print(f"[ERROR] Exception in /books: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve books")
+
+@app.get("/books/{isbn}")
+async def get_book(isbn: str, auth: bool = Depends(authenticate)):
+    try:
+        async with SessionLocal() as session:
+            result = await session.execute(select(Book).where(Book.isbn == isbn))
+            book = result.scalar_one_or_none()
+            if not book:
+                raise HTTPException(status_code=404, detail="Book not found")
+            return {
+                "ISBN": book.isbn,
+                "title": book.title,
+                "author": book.author,
+                "year": book.year,
+                "publisher": book.publisher,
+                "cover": book.cover,
+                "genre": book.genre or "",
+                "price": str(book.price) if book.price is not None else "",
+                "rating": str(book.rating) if book.rating is not None else ""
+            }
+    except Exception as e:
+        print(f"[ERROR] Exception in /books/{isbn}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve book")
+
+
+
+@app.post("/login")
+async def login(credentials: HTTPBasicCredentials = Depends(security)):
+    global sessions
+    correct_password = config.PASSWORD
+    if not secrets.compare_digest(credentials.password, correct_password):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+    # Generate a simple session token and reload sessions to ensure consistency
+    token = secrets.token_hex(16)
+    sessions = load_sessions()
+    sessions.add(token)
+    save_sessions(sessions)
+    print("[DEBUG] Generated new token and saved to sessions:", token)
+    return {"token": token}
+
+@app.get("/test-auth")
+async def test_auth_endpoint(auth: bool = Depends(authenticate)):
+    """Test endpoint to verify authentication is working"""
+    return {"message": "Authentication successful!", "auth": auth}
+
+@app.post("/add-book")
+async def add_book(book: dict, auth: bool = Depends(authenticate)):
+    try:
+        # Validation - updated to include new fields
+        required = ["ISBN", "title", "author", "year", "publisher", "cover", "genre", "price", "rating"]
+        for field in required:
+            if field not in book:
+                raise HTTPException(status_code=400, detail=f"Missing field: {field}")
+
+        print("[DEBUG] Adding book to database:", book)
+        
+        # Actually add the book to the database
+        async with SessionLocal() as session:
+            # Check if book with this ISBN already exists
+            existing_book = await session.execute(
+                select(Book).where(Book.isbn == book["ISBN"])
+            )
+            if existing_book.scalar_one_or_none():
+                raise HTTPException(status_code=400, detail="Book with this ISBN already exists")
+            
+            # Create new book with all fields
+            # Convert price and rating to numeric values
+            try:
+                price_value = float(book["price"]) if book["price"] else None
+                rating_value = float(book["rating"]) if book["rating"] else None
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Price and rating must be valid numbers")
+            
+            new_book = Book(
+                isbn=book["ISBN"],
+                title=book["title"],
+                author=book["author"],
+                year=book["year"],
+                publisher=book["publisher"],
+                cover=book["cover"],
+                genre=book["genre"],  # Map "genre" field from request to "genre" model attribute
+                price=price_value,
+                rating=rating_value
+            )
+            
+            session.add(new_book)
+            await session.commit()
+            print("[DEBUG] Book successfully added to database")
+            
+        return {"message": "Book added successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("[ERROR] Exception in /add-book:", str(e))
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.post("/import-books")
+async def import_books(auth: bool = Depends(authenticate)):
+    # Import books from books.json
+    try:
+        with open("../books.json", "r", encoding="utf-8") as f:
+            books = json.load(f)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read books.json: {e}")
+    imported = 0
+    async with SessionLocal() as session:
+        for book in books:
+            if not all(k in book for k in ["ISBN", "title", "author", "year", "publisher", "cover"]):
+                continue
+            # Check if the book already exists
+            result = await session.execute(select(Book).where(Book.isbn == book["ISBN"]))
+            existing = result.scalar_one_or_none()
+            if existing:
+                continue  # Skip duplicates
+            # Convert price and rating to numeric values for import
+            try:
+                price_value = float(book.get("price", "0")) if book.get("price") else None
+                rating_value = float(book.get("rating", "0")) if book.get("rating") else None
+            except ValueError:
+                # Skip books with invalid price/rating data
+                continue
+                
+            new_book = Book(
+                isbn=book["ISBN"],
+                title=book["title"],
+                author=book["author"],
+                year=book["year"],
+                publisher=book["publisher"],
+                cover=book["cover"],
+                genre=book.get("genre", ""),
+                price=price_value,
+                rating=rating_value
+            )
+            session.add(new_book)
+            imported += 1
+        try:
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise HTTPException(status_code=400, detail=str(e))
+    return {"imported": imported}
