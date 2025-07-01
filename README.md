@@ -423,9 +423,9 @@ python tests/diagnose_500_error.py          # Database diagnostics
 python tests/check_database.py             # Database health check
 
 # Browser: Open frontend test files
-# 1. frontend/test/form-tests.html
-# 2. frontend/debug-form-test.html
-# 3. frontend/test/real-backend-test.html
+ 1. frontend/test/form-tests.html
+ 2. frontend/debug-form-test.html
+ 3. frontend/test/real-backend-test.html
 ```
 
 ### 🔍 Test Debugging and Reporting
@@ -455,25 +455,37 @@ python tests/check_database.py             # Database health check
 ## 📁 Project Structure
 ```
 backend/                    # FastAPI backend
+
 ├── main.py                # Main application with all endpoints
+
 ├── config.py              # Configuration (password)
+
 ├── requirements.txt       # Python dependencies
+
 ├── sessions.pkl           # Session token storage
+
 ├── run_tests.py           # Test runner script
+
 └── tests/                 # Test files directory
-    ├── __init__.py        # Python package initialization
-    ├── test_auth_flow.py  # Authentication testing
-    ├── end_to_end_test.py # Complete API testing
+
+    ├── __init__.py        # Python package initialization    
+    ├── test_auth_flow.py  # Authentication testing    
+    ├── end_to_end_test.py # Complete API testing    
     ├── complete_test.py   # Full flow testing
     ├── test_new_fields.py # New fields testing
     ├── diagnose_500_error.py # Database diagnostics
     └── *.py               # Various other test scripts
 
 frontend/                   # 🌐 Frontend application
+
 ├── index.html             # 🏠 Main application page
+
 ├── app.js                 # ⚡ JavaScript application logic
+
 ├── style.css              # 🎨 Compiled CSS styles
+
 └── test/                  # 🧪 Frontend test suite
+
     ├── README.html        # 📋 Interactive test dashboard (entry point)
     ├── README.md          # 📚 Test documentation
     ├── form-tests.html    # 🔧 Unit tests (no backend required)
@@ -486,6 +498,7 @@ frontend/                   # 🌐 Frontend application
     └── app.test.js        # 🧰 Test utilities
 
 src/                       # SASS source files
+
 ├── style.scss             # Main SASS source
 
 books.json                 # Example books data for import
