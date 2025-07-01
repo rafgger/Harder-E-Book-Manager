@@ -2,6 +2,12 @@
 
 A minimalist web application for managing e-books with a FastAPI backend and a modern, responsive frontend featuring session-based authentication and real-time notifications. This is a more difficult version of [Easier-E-Book-Manager](https://github.com/rafgger/Easier-E-Book-Manager).
 
+<a href="https://youtu.be/a16G7tKzsl0" target="_blank" rel="noopener noreferrer">
+  <img src="https://github.com/user-attachments/assets/56b9c3ac-7578-4f8f-9abb-0e450dc00fba" alt="Harder E-Book Manager" width="500"/>
+</a>
+
+
+
 ## Features
 - **Session-based authentication** with Bearer token support
 - **Add new books** with comprehensive validation and duplicate checking (includes genre, price, and rating)
